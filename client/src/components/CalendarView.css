@@ -1,0 +1,42 @@
+.calendar-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.calendar {
+  width: 100%;
+  border-collapse: collapse;
+}
+.calendar th,
+.calendar td {
+  border: 1px solid #ddd;
+  width: 14.28%;
+  vertical-align: top;
+  height: 100px;
+  padding: 4px;
+}
+.date-number {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.has-tasks {
+  background-color: #f9f9f9;
+}
+.task-markers {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.task-markers li {
+  width: 6px;
+  height: 6px;
+  background: #ff8c00;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 2px;
+}
