@@ -1,23 +1,30 @@
 // src/index.js
+import React, { Suspense } from 'react'; // 1. Import Suspense
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { CookiesProvider } from 'react-cookie';
 
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import { CookiesProvider } from "react-cookie";
+import App from './App';
+import { ThemeProvider } from './ThemeContext';
 import { PremiumProvider } from "./context/PremiumContext";
-import { BrowserRouter } from "react-router-dom";
+import './i18n'; // Your i18n configuration
 import "./index.css";
 
- const root = ReactDOM.createRoot(document.getElementById("root"));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
-  <CookiesProvider>
-    <PremiumProvider>
+  <React.StrictMode>
+    {/* 2. Wrap your app in the Suspense component */}
+    <Suspense fallback={<div>Loading translations...</div>}>
       <BrowserRouter>
-        <React.StrictMode>
-         <App />
-       </React.StrictMode>
+        <CookiesProvider>
+          <ThemeProvider>
+            <PremiumProvider>
+              <App />
+            </PremiumProvider>
+          </ThemeProvider>
+        </CookiesProvider>
       </BrowserRouter>
-   </PremiumProvider>
- </CookiesProvider>
+    </Suspense>
+  </React.StrictMode>
 );

@@ -1,42 +1,95 @@
-.calendar-container {
-  max-width: 600px;
-  margin: 0 auto;
+.calendar-view-wrapper {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
+
 .calendar-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  margin-bottom: 1rem;
 }
-.calendar {
-  width: 100%;
-  border-collapse: collapse;
+
+.calendar-nav {
+  background: #eee;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-.calendar th,
-.calendar td {
-  border: 1px solid #ddd;
-  width: 14.28%;
-  vertical-align: top;
-  height: 100px;
-  padding: 4px;
+.calendar-nav:hover {
+  background: #ddd;
 }
-.date-number {
-  font-weight: bold;
-  margin-bottom: 4px;
+
+.calendar-month {
+  font-size: 1.25rem;
+  font-weight: 500;
 }
-.has-tasks {
-  background-color: #f9f9f9;
+
+.calendar-day-names {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.5rem;
 }
-.task-markers {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+
+.calendar-day-name {
+  text-align: center;
+  font-weight: 600;
+  color: #555;
 }
-.task-markers li {
-  width: 6px;
-  height: 6px;
-  background: #ff8c00;
-  border-radius: 50%;
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+/* empty slots before month starts */
+.day.empty {
+  background: transparent;
+}
+
+/* each day cell */
+.day {
+  position: relative;
+  padding: 0.5rem;
+  border-radius: 6px;
+  text-align: center;
+  background: #f7f9fc;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.day:hover {
+  background: #e8eef6;
+}
+
+/* number in top‐left */
+.day-number {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  color: #333;
+}
+
+/* highlight today */
+.day.today {
+  border: 2px solid #2196f3;
+}
+
+/* badge for tasks */
+.task-count {
   display: inline-block;
-  margin-right: 2px;
+  margin-top: 0.25rem;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  background: #4caf50;
+  color: #fff;
+  border-radius: 10px;
 }

@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
+import alertSound from "../assets/done.mp3";
 import "./Timer.css";
 
 const Timer = ({
@@ -7,32 +8,34 @@ const Timer = ({
   onCalendarClick,
   onPriorityClick,
   onTimerClick,
-  onSettingsClick
+  onSettingsClick,
+  pomodoroTask
 }) => {
   const [activeTab, setActiveTab] = useState("pomodoro");
-  const [pomoTime, setPomoTime]         = useState(25 * 60);
-  const [pomoRunning, setPomoRunning]   = useState(false);
-  const [pomoMode, setPomoMode]         = useState("work");
-  const [stopwatchTime, setStopwatchTime]       = useState(0);
+  const [pomoTime, setPomoTime] = useState(25 * 60);
+  const [pomoRunning, setPomoRunning] = useState(false);
+  const [pomoMode, setPomoMode] = useState("work");
+  const [stopwatchTime, setStopwatchTime] = useState(0);
   const [stopwatchRunning, setStopwatchRunning] = useState(false);
 
-  // Pomodoro interval
+  // Pomodoro timer
   useEffect(() => {
     let id;
-    if (pomoRunning) {
+    if (activeTab === "pomodoro" && pomoRunning) {
       id = setInterval(() => {
         setPomoTime(prev => {
           if (prev <= 1) {
             clearInterval(id);
+            new Audio(alertSound).play().catch(() => {});
             handlePomoSwitch();
-            return prev;
+            return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
     return () => clearInterval(id);
-  }, [pomoRunning]);
+  }, [pomoRunning, activeTab]);
 
   const handlePomoSwitch = () => {
     if (pomoMode === "work") {
@@ -45,32 +48,30 @@ const Timer = ({
     setPomoRunning(false);
   };
 
-  // Stopwatch interval
+  // Stopwatch timer
   useEffect(() => {
     let id;
-    if (stopwatchRunning) {
+    if (activeTab === "stopwatch" && stopwatchRunning) {
       id = setInterval(() => {
         setStopwatchTime(t => t + 1);
       }, 1000);
     }
     return () => clearInterval(id);
-  }, [stopwatchRunning]);
+  }, [stopwatchRunning, activeTab]);
 
   const formatTime = sec => {
-    const m = Math.floor(sec / 60)
-      .toString()
-      .padStart(2, "0");
-    const s = (sec % 60).toString().padStart(2, "0");
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
     return `${m}:${s}`;
   };
 
-  // SVG ring maths
-  const R       = 140;
-  const STROKE  = 8;
-  const radius  = R - STROKE * 2;
-  const circ    = radius * 2 * Math.PI;
-  const total   = pomoMode === "work" ? 25 * 60 : 5 * 60;
-  const offset  = circ - (pomoTime / total) * circ;
+  // Circular progress maths
+  const R = 140;
+  const STROKE = 8;
+  const radius = R - STROKE * 2;
+  const circ = radius * 2 * Math.PI;
+  const total = pomoMode === "work" ? 25 * 60 : 5 * 60;
+  const offset = circ - (pomoTime / total) * circ;
 
   return (
     <div className="timer-container">
@@ -91,6 +92,11 @@ const Timer = ({
 
       {activeTab === "pomodoro" && (
         <>
+          {pomodoroTask && (
+            <h4 className="pomo-task-title">
+              Working on: {pomodoroTask.title}
+            </h4>
+          )}
           <div className="circular-ring">
             <svg width={R * 2} height={R * 2}>
               <circle
@@ -112,22 +118,32 @@ const Timer = ({
                 cy={R}
               />
             </svg>
-            <div className="timer-text">
-              {formatTime(pomoTime)}
-            </div>
+            <div className="timer-text">{formatTime(pomoTime)}</div>
           </div>
-          <button
-            className="start-btn"
-            onClick={() => setPomoRunning(r => !r)}
-          >
-            {pomoRunning ? "Pause" : "Start"}
-          </button>
+          <div className="pomo-controls">
+            <button
+              className="start-btn"
+              onClick={() => setPomoRunning(r => !r)}
+            >
+              {pomoRunning ? "Pause" : "Start"}
+            </button>
+            <button
+              className="start-btn reset"
+              onClick={() => {
+                setPomoRunning(false);
+                setPomoMode("work");
+                setPomoTime(25 * 60);
+              }}
+            >
+              Reset
+            </button>
+          </div>
         </>
       )}
 
       {activeTab === "stopwatch" && (
         <>
-          <div className="timer-text" style={{ fontSize:  "32px" }}>
+          <div className="timer-text" style={{ fontSize: "32px" }}>
             {new Date(stopwatchTime * 1000)
               .toISOString()
               .substr(11, 8)}
@@ -145,12 +161,7 @@ const Timer = ({
         <button onClick={onTasksClick}>✔︎</button>
         <button onClick={onCalendarClick}>📅</button>
         <button onClick={onPriorityClick}>⋯</button>
-        <button
-          className="active"
-          onClick={onTimerClick}
-        >
-          ●
-        </button>
+        <button className="active" onClick={onTimerClick}>●</button>
         <button onClick={onSettingsClick}>⚙︎</button>
       </div>
     </div>

@@ -9,3 +9,12 @@ server/node_modules/
 # logs & misc
 *.log
 .DS_Store
+taskmaster/
+
+# local env files
+*.env*
+client/src/components/.env*
+
+# CRA build artefacts
+client/public/service-worker.js
+

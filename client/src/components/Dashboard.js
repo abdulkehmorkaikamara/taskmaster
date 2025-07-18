@@ -1,127 +1,130 @@
-import { useState, useEffect } from "react";
-import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+// src/components/Dashboard.js
 
-const Dashboard = ({ tasks }) => {
-  const [reportType, setReportType] = useState("weekly");
-  const [filteredTasks, setFilteredTasks] = useState({ completed: [], pending: [] });
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+import React, { useContext, useMemo } from 'react';
+import { PremiumContext } from '../context/PremiumContext';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip as PieTooltip,
+  ResponsiveContainer as PieResponsive
+} from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as BarTooltip,
+  ResponsiveContainer as BarResponsive,
+  Cell as BarCell
+} from 'recharts';
+import './Dashboard.css';
 
-  useEffect(() => {
-    if (tasks) {
-      const now = new Date();
-      let completed = [];
-      let pending = [];
+export default function Dashboard({ tasks }) {
+  const { isPremium } = useContext(PremiumContext);
 
-      const isInRange = (taskDate, start, end) => {
-        const date = new Date(taskDate);
-        return date >= start && date <= end;
-      };
+  // Prepare pie-chart data
+  const completed = tasks.filter(t => t.progress === 100).length;
+  const pending   = tasks.length - completed;
+  const pieData    = [
+    { name: 'Completed', value: completed },
+    { name: 'Pending',   value: pending }
+  ];
 
-      if (reportType === "daily") {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        completed = tasks.filter(task =>
-          task.progress === 100 && new Date(task.date).toDateString() === today.toDateString()
-        );
-        pending = tasks.filter(task =>
-          task.progress < 100 && new Date(task.date).toDateString() === today.toDateString()
-        );
-      } else if (reportType === "weekly") {
-        const lastWeek = new Date(now);
-        lastWeek.setDate(now.getDate() - 7);
-        completed = tasks.filter(task => task.progress === 100 && new Date(task.date) > lastWeek);
-        pending = tasks.filter(task => task.progress < 100 && new Date(task.date) > lastWeek);
-      } else if (reportType === "monthly") {
-        const lastMonth = new Date(now);
-        lastMonth.setMonth(now.getMonth() - 1);
-        completed = tasks.filter(task => task.progress === 100 && new Date(task.date) > lastMonth);
-        pending = tasks.filter(task => task.progress < 100 && new Date(task.date) > lastMonth);
-      } else if (reportType === "yearly") {
-        const lastYear = new Date(now);
-        lastYear.setFullYear(now.getFullYear() - 1);
-        completed = tasks.filter(task => task.progress === 100 && new Date(task.date) > lastYear);
-        pending = tasks.filter(task => task.progress < 100 && new Date(task.date) > lastYear);
-      } else if (reportType === "custom") {
-        completed = tasks.filter(task => task.progress === 100 && isInRange(task.date, startDate, endDate));
-        pending = tasks.filter(task => task.progress < 100 && isInRange(task.date, startDate, endDate));
-      }
+  // Prepare bar-chart data (by list_name)
+  const barData = useMemo(() => {
+    const map = {};
+    tasks.forEach(t => {
+      const name = t.list_name || 'Default';
+      map[name] = (map[name] || 0) + 1;
+    });
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
+  }, [tasks]);
 
-      setFilteredTasks({ completed, pending });
-    }
-  }, [reportType, tasks, startDate, endDate]);
+  // Advanced analytics: monthly breakdown (premium-only)
+  const monthlyData = useMemo(() => {
+    if (!isPremium) return [];
+    const map = {};
+    tasks.forEach(t => {
+      const key = new Date(t.date).toLocaleString('default', {
+        month: 'short',
+        year:  'numeric'
+      });
+      map[key] = (map[key] || 0) + 1;
+    });
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
+  }, [tasks, isPremium]);
 
-  const COLORS = ["#00C49F", "#FF8042"];
+  const COLORS = ['#81c784', '#e57373', '#64b5f6', '#ffb74d'];
 
   return (
-    <div className="dashboard fade-in">
-      <h2>📊 Task Overview</h2>
-
-      <div className="report-buttons">
-        <button onClick={() => setReportType("daily")}>📆 Daily</button>
-        <button onClick={() => setReportType("custom")}>📅 Custom</button>
-        <button onClick={() => setReportType("weekly")}>📅 Weekly</button>
-        <button onClick={() => setReportType("monthly")}>📅 Monthly</button>
-        <button onClick={() => setReportType("yearly")}>📅 Yearly</button>
-      </div>
-
-      {reportType === "custom" && (
-        <div className="custom-date-picker">
-          <label>From: </label>
-          <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
-          <label>To: </label>
-          <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} minDate={startDate} />
-        </div>
-      )}
-
-      <div className="charts-container">
-        <div className="chart">
-          <h3>Task Completion</h3>
-          <PieChart width={250} height={250}>
+    <div className="charts-container">
+      {/* Pie Chart: Task Status */}
+      <div className="chart">
+        <h4>Task Status</h4>
+        <PieResponsive width="100%" height={200}>
+          <PieChart>
             <Pie
-              data={[
-                { name: "Completed", value: filteredTasks.completed.length },
-                { name: "Pending", value: filteredTasks.pending.length }
-              ]}
+              data={pieData}
               cx="50%"
               cy="50%"
-              outerRadius={80}
-              fill="#8884d8"
+              outerRadius={60}
               dataKey="value"
               label
+              animationDuration={800}
             >
-              {[0, 1].map((index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index]} />
+              {pieData.map((entry, idx) => (
+                <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <PieTooltip />
           </PieChart>
-        </div>
+        </PieResponsive>
+      </div>
 
-        <div className="chart">
-          <h3>Progress Breakdown</h3>
-          <BarChart width={300} height={250} data={[...filteredTasks.completed, ...filteredTasks.pending]}>
+      {/* Bar Chart: Tasks by List */}
+      <div className="chart">
+        <h4>Tasks by List</h4>
+        <BarResponsive width="100%" height={200}>
+          <BarChart data={barData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="title" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="progress" fill="#8884d8" />
+            <XAxis dataKey="name" />
+            <YAxis allowDecimals={false} />
+            <BarTooltip />
+            <Bar dataKey="value" animationDuration={800}>
+              {barData.map((entry, idx) => (
+                <BarCell key={idx} fill={COLORS[idx % COLORS.length]} />
+              ))}
+            </Bar>
           </BarChart>
+        </BarResponsive>
+      </div>
+
+      {/* Premium-only: Monthly Breakdown */}
+      {isPremium ? (
+        <div className="chart">
+          <h4>Tasks by Month</h4>
+          <BarResponsive width="100%" height={200}>
+            <BarChart data={monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis allowDecimals={false} />
+              <BarTooltip />
+              <Bar dataKey="value" animationDuration={800}>
+                {monthlyData.map((entry, idx) => (
+                  <BarCell key={idx} fill={COLORS[idx % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </BarResponsive>
         </div>
-      </div>
-
-      <div className="task-list">
-        <h3>✅ Completed Tasks</h3>
-        <ul>{filteredTasks.completed.map(task => <li key={task.id}>{task.title}</li>)}</ul>
-
-        <h3>⚠️ Pending Tasks</h3>
-        <ul>{filteredTasks.pending.map(task => <li key={task.id}>{task.title}</li>)}</ul>
-      </div>
+      ) : (
+        <div className="chart upgrade-hint">
+          <h4>Advanced Analytics</h4>
+          <p>Upgrade to Premium to unlock monthly breakdowns.</p>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Dashboard;
+}

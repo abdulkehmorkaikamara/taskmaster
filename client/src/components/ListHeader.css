@@ -1,0 +1,103 @@
+/* src/components/ListHeader.css */
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--bg-card);
+  box-shadow: 0 4px 12px var(--surface-shadow);
+}
+
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-buttons button {
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Share = emerald green */
+.nav-buttons .share {
+  background: #2ecc71;
+  color: #fff;
+}
+.nav-buttons .share:hover,
+.nav-buttons .share:focus {
+  background: #27ae60;
+}
+
+/* Dashboard = golden yellow */
+.nav-buttons .dashboard {
+  background: #f1c40f;
+  color: #2c3e50;
+}
+.nav-buttons .dashboard:hover,
+.nav-buttons .dashboard:focus {
+  background: #d4ac0d;
+  color: #fff;
+}
+
+/* Profile = amethyst purple */
+.nav-buttons .profile {
+  background: #9b59b6;
+  color: #fff;
+}
+.nav-buttons .profile:hover,
+.nav-buttons .profile:focus {
+  background: #8e44ad;
+}
+
+/* Settings = sunset orange */
+.nav-buttons .settings {
+  background: #e67e22;
+  color: #fff;
+}
+.nav-buttons .settings:hover,
+.nav-buttons .settings:focus {
+  background: #d35400;
+}
+
+/* Sign Out = coral red */
+.nav-buttons .signout {
+  background: #e74c3c;
+  color: #fff;
+}
+.nav-buttons .signout:hover,
+.nav-buttons .signout:focus {
+  background: #c0392b;
+}
+
+@media (max-width: 600px) {
+  .hamburger-btn {
+    display: block;
+  }
+  .nav-buttons {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--bg-card);
+    display: none;
+  }
+  .nav-buttons.open {
+    display: flex;
+  }
+  .nav-buttons button {
+    width: 100%;
+    text-align: left;
+    border-top: 1px solid var(--surface-shadow);
+  }
+}

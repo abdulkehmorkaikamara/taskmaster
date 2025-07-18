@@ -2,21 +2,30 @@
   "name": "abduls-todo-app",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8000",
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.5",
     "@fullcalendar/react": "^6.1.17",
+    "@hello-pangea/dnd": "^18.0.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
+    "chrono-node": "^2.8.3",
     "dotenv": "^16.4.7",
+    "i18next": "^25.3.2",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "i18next-http-backend": "^3.0.2",
     "lucide-react": "^0.488.0",
     "react": "^19.0.0",
+    "react-calendar": "^6.0.0",
     "react-cookie": "^8.0.0",
-    "react-datepicker": "^8.3.0",
+    "react-datepicker": "^8.4.0",
     "react-dom": "^19.0.0",
+    "react-i18next": "^15.6.0",
     "react-router-dom": "^7.5.0",
     "react-scripts": "^5.0.1",
+    "react-select": "^5.10.2",
     "recharts": "^2.15.1",
     "web-vitals": "^2.1.4"
   },
@@ -48,4 +57,3 @@
     "webpack": "^5.98.0"
   }
 }
-

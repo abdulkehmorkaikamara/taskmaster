@@ -1,71 +1,76 @@
-import { useState } from "react";
-import TickIcon from "./TickIcon";
-import Modal from "./Modal";
-import ProgressBar from "./ProgressBar";
-import doneSound from "../assets/done.mp3";
+// src/components/ListItem.js
 
-const ListItem = ({ task, getData }) => {
-  const [showModal, setShowModal] = useState(false);
+import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
+import TickIcon         from "./TickIcon";
+import ProgressBar      from "./ProgressBar";
+import doneSound        from "../assets/done.mp3";
+import CommentsSection  from "./CommentsSection";
+import ActivityLog      from "./ActivityLog";
+import "./ListItem.css";
+
+export default function ListItem({
+  task,
+  userEmail,
+  onEdit,
+  onStart,
+  onUpdateTask
+}) {
+  const { t } = useTranslation();
   const [isCompleted, setIsCompleted] = useState(task.progress === 100);
+  const [showSubtasks, setShowSubtasks] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
-  const deleteItem = async (e) => {
-    e.preventDefault();           // just in case
-    console.log("⏳ Deleting task", task.id);
+  useEffect(() => {
+    setIsCompleted(task.progress === 100);
+  }, [task.progress]);
 
-    try {
-      const res = await fetch(
-        `${process.env.REACT_APP_SERVERURL}/todos/${task.id}`,
-        { method: "DELETE" }
-      );
+  // Date / Time parsing & formatting
+  let displayDate = t('tasks.no_due_date');
+  let displayTime = "";
+  if (task.start_at) {
+    const startDate = new Date(task.start_at);
+    if (!isNaN(startDate.getTime())) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+      const dayAfterTomorrow = new Date(tomorrow); dayAfterTomorrow.setDate(tomorrow.getDate() + 1);
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        console.error("❌ Delete failed:", err || res.statusText);
-        alert("Failed to delete: " + (err?.error || res.statusText));
-        return;
+      if (startDate >= today && startDate < tomorrow) {
+        displayDate = "Today";
+      } else if (startDate >= tomorrow && startDate < dayAfterTomorrow) {
+        displayDate = "Tomorrow";
+      } else {
+        displayDate = startDate.toLocaleDateString(undefined, { month: "short", day: "numeric" });
       }
+      displayTime = startDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    } else {
+      displayDate = "Invalid date";
+    }
+  }
 
-      console.log("✅ Task deleted");
-      getData();
+  const deleteItem = async () => {
+    // A full implementation would require an onDeleteTask prop from App.js for optimistic updates
+    // For now, we can just call the server and then reload.
+    try {
+        await fetch(`${process.env.REACT_APP_SERVERURL}/todos/${task.id}`, { method: "DELETE" });
+        window.location.reload();
     } catch (err) {
-      console.error("❌ Error deleting task:", err);
-      alert("Error deleting task: " + err.message);
+        alert("Failed to delete task.");
     }
   };
 
-  const markAsCompleted = async () => {
+  const markAsCompleted = () => {
     if (isCompleted) return;
-    const updated = {
-      user_email:    task.user_email,
-      title:         task.title,
-      progress:      100,
-      date:          task.date,
-      is_urgent:     task.is_urgent,
-      is_important:  task.is_important,
-      list_name:     task.list_name,
-    };
+    onUpdateTask(task.id, { progress: 100, list_name: 'Done' });
+    new Audio(doneSound).play().catch(() => {}); // Restored doneSound usage
+  };
 
-    try {
-      const res = await fetch(
-        `${process.env.REACT_APP_SERVERURL}/todos/${task.id}`,
-        {
-          method:  "PUT",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify(updated),
-        }
-      );
-
-      if (!res.ok) {
-        console.error("❌ Complete update failed");
-        return;
-      }
-
-      setIsCompleted(true);
-      new Audio(doneSound).play().catch(() => {});
-      getData();
-    } catch (err) {
-      console.error("❌ Error updating task:", err);
-    }
+  const toggleSubtask = (sub) => {
+    const updatedSubs = (task.subtasks || []).map(s =>
+      s.id === sub.id ? { ...s, completed: !s.completed } : s
+    );
+    onUpdateTask(task.id, { subtasks: updatedSubs });
   };
 
   return (
@@ -73,44 +78,55 @@ const ListItem = ({ task, getData }) => {
       <div className="info-container">
         <TickIcon />
         <p className="task-title">{task.title}</p>
+        <p className="task-meta">
+          {displayDate}
+          {displayTime && `, ${displayTime}`}
+        </p>
         <ProgressBar progress={task.progress} />
       </div>
 
       <div className="button-container">
-        <input
-          type="checkbox"
-          checked={isCompleted}
-          onChange={markAsCompleted}
-          aria-label="Mark task as completed"
-        />
-
-        <button
-          type="button"
-          className="edit"
-          onClick={() => setShowModal(true)}
-        >
-          EDIT
-        </button>
-
-        <button
-          type="button"
-          className="delete"
-          onClick={deleteItem}
-        >
-          DELETE
-        </button>
+        <input type="checkbox" className="task-checkbox" checked={isCompleted} onChange={markAsCompleted} aria-label={t('tasks.mark_complete')} />
+        <button type="button" className="btn edit"  onClick={() => onEdit(task)}>{t('edit')}</button>
+        <button type="button" className="btn start" onClick={() => onStart(task)}>{t('start')}</button>
+        <button type="button" className="btn delete" onClick={deleteItem}>{t('delete')}</button>
       </div>
 
-      {showModal && (
-        <Modal
-          mode="edit"
-          setShowModal={setShowModal}
-          getData={getData}
-          task={task}
-        />
+      {task.subtasks?.length > 0 && (
+        <div className="subtasks-container">
+          <button type="button" className="btn toggle-subtasks" onClick={() => setShowSubtasks(v => !v)}>
+            {showSubtasks ? t('hide_checklist') : t('show_checklist')}
+          </button>
+          
+          {/* Restored subtasks list which uses the toggleSubtask function */}
+          {showSubtasks && (
+            <div className="subtasks-list">
+              {task.subtasks.map(sub => (
+                <label key={sub.id} className="subtask-item">
+                  <input
+                    type="checkbox"
+                    checked={sub.completed}
+                    onChange={() => toggleSubtask(sub)}
+                  />
+                  <span className={sub.completed ? "completed" : ""}>
+                    {sub.title}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <button type="button" className="btn details-toggle" onClick={() => setShowDetails(v => !v)}>
+        {showDetails ? t('hide_details') : t('show_details')}
+      </button>
+      {showDetails && (
+        <div className="task-details">
+          <ActivityLog taskId={task.id} />
+          <CommentsSection taskId={task.id} userEmail={userEmail} />
+        </div>
       )}
     </li>
   );
-};
-
-export default ListItem;
+}

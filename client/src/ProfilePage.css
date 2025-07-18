@@ -1,0 +1,47 @@
+/* src/components/ProfilePage.css */
+
+.profile-page {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+.profile-form label {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.profile-form input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+.profile-page .btn.edit,
+.profile-page .btn.create {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+.upgrade-section {
+  margin-top: 32px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+.upgrade-section h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+.profile-page .message {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #4caf50;
+}

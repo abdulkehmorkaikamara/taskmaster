@@ -1,0 +1,26 @@
+/* src/components/Dashboard.css */
+
+.charts-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-around;
+}
+.chart {
+  flex: 1 1 300px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.chart h4 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+  color: #2d2d2d;
+}
+.upgrade-hint {
+  text-align: center;
+  font-style: italic;
+  color: #666;
+  padding: 24px;
+}

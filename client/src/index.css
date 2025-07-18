@@ -1,629 +1,234 @@
-body {
-  margin: 0;
-  padding: 0;
-  background-color: rgb(169, 193, 216);
-  display: flex;
-  justify-content: center;
-  font-family: 'Trebuchet MS', Arial, sans-serif;
-}
+/* ────────────────────────────────────────────────────────────────
+   index.css — Global resets & base styles
+───────────────────────────────────────────────────────────────── */
 
-/* Main App Container */
-.app {
-  background-color: #fff;
-  box-shadow: rgba(0,0,0, 0.05) 0 6px 24px, rgba(0,0,0, 0.08) 0 0 0 1px;
-  border-radius: 10px;
-  padding: 10px;
-  width: 800px;
-  margin-top: 50px;
-}
-
-/* Containers & Buttons */
-.button-container {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* space between items */
-}
-
-.info-container {
-  display: flex;
-  align-items: center;
-}
-
-.button-container button {
-  margin: 0 5px;
-  padding: 5px 10px;
-  font-size: 10px;
-  border-radius: 12px;
-  background-color: transparent;
-}
-
-/* (RE-ADDED) .settings-link, in case you use it in ListHeader.js */
-.settings-link {
-  margin-left: auto; /* pushes link to the far right if you want */
-  border: 1.5px solid rgb(255, 175, 163);
-  background-color: rgb(14, 12, 83) !important;
-  color: rgb(234, 234, 234);
-  padding: 6px 12px; /* match your button style if you like */
-  border-radius: 12px; /* optional, matching other buttons */
-  font-size: 10px; /* optional */
-}
-
-/* Edit button style */
-.edit {
-  border: 1.5px solid rgb(141, 181, 145);
-  color: rgb(141, 181, 145);
-  text-transform: uppercase;
-}
-
-.edit:hover {
-  background-color: rgb(182, 223, 186);
-}
-
-.edit:active {
-  color: #fff;
-  background-color: rgb(141, 181, 145);
-}
-
-/* Delete button style */
-.delete {
-  border: 1.5px solid rgb(255, 175, 163);
-  color: rgb(255, 175, 163);
-  text-transform: uppercase;
-}
-
-.delete:hover {
-  background-color: rgb(255, 201, 193);
-}
-
-.delete:active {
-  background-color: rgb(255, 175, 163);
-  color: #fff;
-}
-
-/* Create button style */
-.create {
-  border: 1.5px solid rgb(108, 115, 148);
-  color: rgb(108, 115, 148);
-  text-transform: uppercase;
-}
-
-.create:hover {
-  background-color: rgb(131, 138, 172);
-}
-
-.create:active {
-  background-color: rgb(108, 115, 148);
-  color: #fff;
-}
-
-/* Signout button style */
-.signout {
-  border: 1.5px solid rgb(255, 175, 163);
-  background-color: rgb(255, 175, 163) !important;
-  color: rgb(234, 234, 234);
-}
-
-.signout:hover {
-  background-color: rgb(175, 94, 94) !important;
-  border: 1.5px solid rgb(175, 94, 94);
-}
-
-.signout:active {
-  border: 1.5px solid rgb(175, 81, 81) !important;
-  background-color: rgb(175, 81, 81) !important;
-  color: #fff;
-}
-.password-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-input input {
-  flex: 1;
-}
-
-.toggle-eye {
-  position: absolute;
-  right: 12px;
-  cursor: pointer;
-  font-size: 18px;
-  user-select: none;
-  opacity: 0.7;
-  transition: 0.2s;
-}
-
-.toggle-eye:hover {
-  opacity: 1;
-}
-
-/* Input Fields */
-input {
-  margin: 11px 0;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 1.5px solid rgb(230, 232, 236);
-}
-
-/* List Header */
-.list-header {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  border-bottom: rgba(0,0,0,0.05) 1px solid;
-}
-
-/* List Item */
-.list-item {
-  width: 100%;
-  margin: 10px 0;
-  border-radius: 10px;
-  box-shadow: rgba(0,0,0,0.08) 0 0 0 1px;
-  display: flex;
-  justify-content: space-between;
-}
-
-/* Tick Icon */
-.tick {
-  padding: 10px;
-}
-
-.tick path {
-  fill: none;
-  stroke: #000;
-  stroke-miterlimit: 10;
-  stroke-width: 32px;
-}
-
-/* Modal */
-.overlay {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal {
-  width: 500px;
-  background-color: #fff;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: rgba(0,0,0,0.05) 0 6px 24px, rgba(0,0,0,0.08) 0 0 0 1px;
-}
-
-.modal .form-title-container {
-  display: flex;
-  justify-content: space-between;
-}
-
-.modal .form-title-container button {
-  border: none;
-  background-color: transparent;
-}
-
-.modal .form-title-container button:active {
-  color: rgb(255, 50, 50);
-}
-
-.modal form {
-  display: flex;
-  flex-direction: column;
-}
-
-.modal label {
-  font-size: 13px;
-}
-
-/* Auth */
-.auth-container {
-  display: flex;
-  justify-content: center;
-  margin: 5px;
-}
-
-.auth-container-box {
-  width: 500px;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: rgba(0,0,0,0.05) 0 6px 24px, rgba(0,0,0,0.08) 0 0 0 1px;
-}
-
-.auth-container-box form {
-  display: flex;
-  flex-direction: column;
-  height: 350px;
-  padding: 20px;
-}
-
-.auth-options {
-  display: flex;
-}
-
-.auth-options button {
-  width: 50%;
-  border: none;
-  padding: 10px;
-  color: rgb(35, 38, 47);
-}
-
-/* Footer & User Info */
-.copyright {
-  font-size: 13px;
-  margin: 10px;
-  color: rgb(114, 114, 144);
-}
-
-.user-email {
-  float: right;
-  font-size: 13px;
-  margin: 10px;
-  color: rgb(114, 114, 144);
-}
-
-/* Progress Bar */
-.outer-bar {
-  width: 200px;
-  height: 14px;
-  background-color: rgb(216, 216, 216);
-  border-radius: 7px;
-  overflow: hidden;
-}
-
-.inner-bar {
-  height: 14px;
-}
-
-/* Task Title */
-.task-title {
-  width: 300px;
-}
-
-/* Combined Dashboard + Task Layout */
-.dashboard-task-container {
-  display: flex;
-  flex-direction: column; /* Stacks Dashboard above Task List */
-  align-items: center;
-  width: 100%;
-  gap: 20px; /* Space between Dashboard and Task List */
-  margin-bottom: 20px; /* Ensure input fields are visible */
-}
-
-/* Dashboard */
-.dashboard {
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: rgba(0,0,0,0.05) 0 6px 24px, rgba(0,0,0,0.08) 0 0 0 1px;
-  width: 90%;
-  max-width: 800px;
-  margin-bottom: 20px; /* Prevents overlapping input fields */
-}
-
-/* Charts Container */
-.charts-container {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* Each Chart */
-.chart {
-  text-align: center;
-}
-
-/* Task List Container */
-.task-list-container {
-  width: 100%;
-  max-width: 800px;
-  padding-bottom: 20px;
-}
-
-/* Dashboard Buttons */
-.report-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.report-buttons button {
-  padding: 8px 12px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-  background-color: rgb(108, 115, 148);
-  color: #fff;
-  font-weight: bold;
-  transition: 0.2s;
-}
-
-.report-buttons button:hover {
-  background-color: rgb(50, 200, 50);
-}
-
-/* Task List styling */
-.task-list h3 {
-  margin-top: 10px;
-  color: rgb(108, 115, 148);
-}
-
-.task-list ul {
+/* Reset box-model and remove default spacing */
+/* Remove default list bullets and spacing */
+ul, ol {
   list-style: none;
-  padding: 0;
-}
-
-.task-list li {
-  background: #fff;
-  padding: 10px;
-  margin-bottom: 5px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Task Completion Checkbox */
-.task-checkbox {
-  transform: scale(1.3);
-  margin-right: 10px;
-  cursor: pointer;
-}
-
-/* Enhanced global styles */
-body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
-  font-family: 'Inter', sans-serif;
+}
+
+
+:root {
+  /* ───– PALETTE ───– */
+  --bg-light:   #f0f4f8;
+  --bg-card:    #ffffff;
+  --bg-alt:     #e3efff;
+  --text-primary:  #1f2d3d;
+  --text-secondary:#5a6b7c;
+  --accent:     #3f8efc;
+  --accent-light: #92c1ff;
+  --success:    #4caf50;
+  --danger:     #f44336;
+  --warning:    #ffb300;
+  --surface-shadow: rgba(31, 38, 135, 0.1);
+}
+
+/* Global background & text */
+body {
+  background: var(--bg-light);
+  color: var(--text-primary);
+}
+/* ======================== */
+/* dark-mode list-item text */
+/* ======================== */
+
+body.dark .list-item {
+  background: #444;            /* your existing override */
+  color: #eee;                 /* make all text light */
+}
+
+body.dark .list-item .info-container,
+body.dark .list-item .info-container * {
+  color: #eee;                 /* force any children (title, date, labels) to light */
+}
+
+:root {
+  /* Light theme (default) */
+  --bg-color:       #ffffff;
+  --text-color:     #333333;
+  --primary-color:  #4CAF50;
+  --accent-color:   #FFC107;
+}
+
+[data-theme="dark"] {
+  --bg-color:       #1e1e1e;
+  --text-color:     #f0f0f0;
+  --primary-color:  #81C784;
+  --accent-color:   #FFD54F;
+}
+
+
+body {
+  background: var(--bg-color);
+  color:      var(--text-color);
+}
+.btn {
+  background: var(--primary-color);
+  color:      var(--bg-color);
+}
+.controls {
   display: flex;
-  justify-content: center;
-  color: #2d2d2d;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+@media (max-width: 600px) {
+  .controls { flex-direction: column; }
+  .list-header .button-container { display: none; /* collapse into menu */ }
+}
+/* Add a hamburger menu that toggles nav on small screens */
+button:focus, input:focus {
+  outline: 2px dashed var(--accent-color);
+  outline-offset: 2px;
 }
 
-.app {
-  width: 90%;
-  max-width: 900px;
-  margin: 40px 0;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  padding: 24px;
-}
+/* src/components/ListHeader.css */
 
-/* Header */
 .list-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  padding: 1rem;
 }
-.list-header h1 {
-  font-size: 2rem;
-  letter-spacing: 0.5px;
-}
-
-/* Button base */
-.btn {
-  font-size: 0.875rem;
-  padding: 8px 16px;
-  border-radius: 8px;
+.hamburger-btn {
+  display: none;
+  background: none;
   border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: 8px;
+}
+.nav-buttons button {
+  margin-left: 0.5rem;
+}
+/* Mobile */
+@media (max-width: 600px) {
+  .hamburger-btn {
+    display: block;
+  }
+  .nav-buttons {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    flex-direction: column;
+    display: none;
+  }
+  .nav-buttons.open {
+    display: flex;
+  }
+  .nav-buttons button {
+    padding: 0.75rem;
+    text-align: left;
+    width: 100%;
+    border-top: 1px solid var(--surface-shadow);
+  }
 }
 
+
+/* The main white card */
+.app {
+  background: var(--bg-card);
+  box-shadow: 0 8px 24px var(--surface-shadow);
+}
+
+/* List items */
+.list-item {
+  background: var(--bg-alt);
+  box-shadow: 0 4px 12px var(--surface-shadow);
+}
+
+/* Buttons */
+.btn {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
 .btn.create {
-  background-color: #4caf50;
+  background: var(--success);
   color: #fff;
 }
 .btn.create:hover {
-  background-color: #43a047;
+  background: #43a047;
 }
-
 .btn.dashboard-toggle {
-  background-color: #2196f3;
+  background: var(--accent);
   color: #fff;
 }
 .btn.dashboard-toggle:hover {
-  background-color: #1e88e5;
+  background: #367ee2;
 }
-
 .btn.settings-toggle {
-  background-color: #ff9800;
+  background: var(--warning);
   color: #fff;
 }
 .btn.settings-toggle:hover {
-  background-color: #fb8c00;
+  background: #e0a800;
+}
+.btn.signout {
+  background: var(--danger);
+  color: #fff;
+}
+.btn.signout:hover {
+  background: #d32f2f;
 }
 
-/* Controls container */
-.controls {
-  display: flex;
-  align-items: center;
-  margin-bottom: 24px;
+/* Inputs */
+input, select {
+  background: #fff;
+  border: 1px solid var(--surface-shadow);
+  color: var(--text-primary);
+}
+input::placeholder {
+  color: var(--text-secondary);
 }
 
-/* Filters */
-.controls select,
-.controls input[type="checkbox"] {
-  margin-left: 8px;
-  margin-right: 16px;
-}
-
-/* Task cards */
-.task-list-container {
-  display: grid;
-  gap: 16px;
-}
-.list-item {
-  background: #fafafa;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  position: relative;
-}
-
-.list-item .info-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.task-title {
-  font-weight: 500;
-  font-size: 1rem;
-}
-
-/* Progress bar grouping */
+/* Progress bar */
 .outer-bar {
-  flex: none;
-  width: 200px;
+  background-color: var(--surface-shadow);
+}
+.inner-bar {
+  background-color: var(--accent);
 }
 
-/* Action buttons */
-.button-container {
-  display: flex;
-  gap: 8px;
-}
-.button-container button {
-  font-size: 0.75rem;
-  padding: 6px 12px;
+/* Modal & panels */
+.modal, .login-box {
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 8px 32px var(--surface-shadow);
 }
 
-button.edit {
-  background-color: #81c784;
-  color: #fff;
-}
-button.edit:hover {
-  background-color: #66bb6a;
+/* Dashboard charts panel */
+.chart {
+  background: var(--bg-card);
+  box-shadow: 0 4px 12px var(--surface-shadow);
 }
 
-button.delete {
-  background-color: #e57373;
-  color: #fff;
+/* Filters & controls */
+.controls {
+  border-bottom: 1px solid var(--surface-shadow);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
 }
-button.delete:hover {
-  background-color: #ef5350;
-}
-
-/* Welcome text */
-.welcome {
-  font-size: 0.9rem;
-  margin-bottom: 12px;
-}
-
-/* 🔄 Auth Container Fade In */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* in Modal.css or your global CSS */
+.overlay {
+  position: fixed;      /* cover the entire viewport */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;        /* flex centering */
+  align-items: center;  /* vertical center */
+  justify-content: center; /* horizontal center */
+  z-index: 999;         /* make sure it’s on top */
 }
 
-.auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #d7eaff, #ffffff);
-}
-
-.auth-container-box {
-  width: 420px;
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  padding: 32px;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.auth-container-box h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 24px;
-  color: #2d2d2d;
-}
-
-.auth-container-box input {
-  border-radius: 12px;
-  border: 1.5px solid #d6dbe3;
-  padding: 12px 16px;
-  margin: 10px 0;
-  font-size: 14px;
-  width: 100%;
-  background-color: #fff;
-  outline: none;
-  transition: 0.3s ease-in-out;
-}
-
-.auth-container-box input:focus {
-  border-color: #4b91f1;
-  box-shadow: 0 0 0 2px rgba(75, 145, 241, 0.3);
-}
-
-.auth-options {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.auth-options button {
-  width: 48%;
-  padding: 10px;
-  background: #f5f5f5;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: 0.3s ease;
-  font-weight: bold;
-}
-
-.auth-options button.selected {
-  background: #4b91f1;
-  color: white;
-}
-
-.auth-options button:hover {
-  opacity: 0.9;
-}
-
-button.create {
-  width: 20%;
-  margin-top: 10px;
-  padding: 12px;
-  background-color: #4caf50;
-  border: none;
-  color: white;
-  font-weight: bold;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button.create:hover {
-  background-color: #43a047;
-}
-
-.error-message {
-  margin-top: 10px;
-  text-align: center;
-  color: crimson;
-  font-weight: bold;
-  animation: shake 0.3s ease-in-out;
+/* optional: make the modal itself scroll if it’s too tall */
+.modal {
+  max-height: 90vh;
+  overflow-y: auto;
 }
 

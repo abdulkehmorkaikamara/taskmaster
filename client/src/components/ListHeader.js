@@ -1,18 +1,21 @@
 // src/components/ListHeader.js
+
 import React, { useState } from "react";
 import { useCookies } from "react-cookie";
-import Modal from "./Modal";
-import { Settings as Cog } from "lucide-react";
+import { Settings as Cog, Menu, X, Share2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import "./ListHeader.css";
 
-const ListHeader = ({
+export default function ListHeader({
   listName,
-  getData,
   toggleDashboard,
   onSettingsClick,
+  onShareClick,
   onSignOut
-}) => {
+}) {
   const [, , removeCookie] = useCookies(["Email", "AuthToken"]);
-  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+  const [navOpen, setNavOpen] = useState(false);
 
   const handleSignOut = () => {
     removeCookie("Email", { path: "/" });
@@ -22,43 +25,39 @@ const ListHeader = ({
   };
 
   return (
-    <div className="list-header">
+    <header className="list-header" role="banner">
       <h1>{listName}</h1>
 
-      <div className="button-container">
-        {/* <button
-          className="create"
-          onClick={() => setShowModal(true)}
-        > */}
-          {/* ADD NEW
-        </button> */}
+      {/* Hamburger toggle for mobile */}
+      <button
+        className="hamburger-btn"
+        aria-label={navOpen ? "Close navigation menu" : "Open navigation menu"}
+        aria-expanded={navOpen}
+        onClick={() => setNavOpen(o => !o)}
+      >
+        {navOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
 
-        <button
-          className="signout"
-          onClick={handleSignOut}
-        >
-          SIGN OUT
+      {/* Nav buttons */}
+      <nav className={`nav-buttons${navOpen ? " open" : ""}`} role="navigation">
+        <button className="btn share" onClick={onShareClick} aria-label="Share this list">
+          <Share2 size={16} style={{ marginRight: 4 }} />
+          Share
         </button>
-
-        <button
-          className="settings-link"
-          onClick={onSettingsClick}
-        >
-          <Cog size={16} /> SETTINGS
+        <button className="btn dashboard" onClick={toggleDashboard} aria-label="Toggle dashboard">
+          Dashboard
         </button>
-
-        
-      </div>
-
-      {showModal && (
-        <Modal
-          mode="create"
-          setShowModal={setShowModal}
-          getData={getData}
-        />
-      )}
-    </div>
+        <button className="btn profile" onClick={() => navigate("/profile")} aria-label="Go to profile">
+          Profile
+        </button>
+        <button className="btn settings" onClick={onSettingsClick} aria-label="Open settings">
+          <Cog size={16} style={{ marginRight: 4 }} />
+          Settings
+        </button>
+        <button className="btn signout" onClick={handleSignOut} aria-label="Sign out">
+          Sign Out
+        </button>
+      </nav>
+    </header>
   );
-};
-
-export default ListHeader;
+}

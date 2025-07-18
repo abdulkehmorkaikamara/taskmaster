@@ -1,119 +1,152 @@
-import { useState } from "react";
+// src/components/Auth.js
+import React, { useState } from "react";
 import { useCookies } from "react-cookie";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import ForgotPassword from "./ForgotPassword";
 
-const Auth = () => {
-  const [, setCookie] = useCookies(null); 
-  const [isLogIn, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import "./Auth.css";
+
+export default function Auth() {
+  const [, setCookie] = useCookies(["Email", "AuthToken"]);
+  const [isLogIn, setIsLogin]                 = useState(true);
+  const [email, setEmail]                     = useState("");
+  const [password, setPassword]               = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [showPass, setShowPass]               = useState(false);
+  const [error, setError]                     = useState(null);
+  const [showForgot, setShowForgot]           = useState(false);
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const viewLogin = (status) => {
+  const toggleMode = (mode) => {
     setError(null);
-    setIsLogin(status);
+    setIsLogin(mode);
   };
 
-  const handleSubmit = async (e, endpoint) => {
-    e.preventDefault();
+  const handleForgotPassword = () => {
+    setShowForgot(true);
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!isLogIn && password !== confirmPassword) {
-      setError("Make sure passwords match!");
+      setError("Passwords must match!");
       return;
     }
-
+    const endpoint = isLogIn ? "login" : "signup";
     try {
-      const response = await fetch(`${process.env.REACT_APP_SERVERURL}/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
+      const res  = await fetch(
+        `${process.env.REACT_APP_SERVERURL}/${endpoint}`,
+        {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ email, password }),
+        }
+      );
+      const data = await res.json();
       if (data.detail) {
         setError(data.detail);
       } else {
-        setCookie("Email", data.email, { path: "/" });
+        setCookie("Email",     data.email, { path: "/" });
         setCookie("AuthToken", data.token, { path: "/" });
         window.location.reload();
       }
-    } catch (err) {
-      setError("Something went wrong! Try again.");
+    } catch {
+      setError("Network error — please try again.");
     }
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-container-box">
-        <form 
-          className={`auth-form ${isLogIn ? "slide-left" : "slide-right"}`} 
-          onSubmit={(e) => handleSubmit(e, isLogIn ? "login" : "signup")}
-        >
-          <h2>{isLogIn ? "Please log in" : "Please sign up!"}</h2>
+      <div className="login-box">
+        <h2>{isLogIn ? "Please log in" : "Create an account"}</h2>
 
-          <input 
-            type="email" 
-            placeholder="email" 
-            required 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-          />
-
-          <div className="password-input">
-            <input 
-              type={showPassword ? "text" : "password"} 
-              placeholder="password" 
-              required 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="input-group">
+            <Mail className="icon" />
+            <input
+              type="email"
+              placeholder="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-            <span onClick={() => setShowPassword((prev) => !prev)} className="toggle-eye">
-              {showPassword ? "🙈" : "👁️"}
-            </span>
+          </div>
+
+          <div className="input-group">
+            <Lock className="icon" />
+            <input
+              type={showPass ? "text" : "password"}
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="toggle-eye"
+              onClick={() => setShowPass((v) => !v)}
+            >
+              {showPass ? <EyeOff /> : <Eye />}
+            </button>
           </div>
 
           {!isLogIn && (
-            <div className="password-input">
-              <input 
-                type={showConfirmPassword ? "text" : "password"} 
-                placeholder="confirm password" 
-                required 
-                value={confirmPassword} 
-                onChange={(e) => setConfirmPassword(e.target.value)} 
+            <div className="input-group">
+              <Lock className="icon" />
+              <input
+                type={showPass ? "text" : "password"}
+                placeholder="Confirm password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
-              <span onClick={() => setShowConfirmPassword((prev) => !prev)} className="toggle-eye">
-                {showConfirmPassword ? "🙈" : "👁️"}
-              </span>
             </div>
           )}
 
-          <button type="submit" className="create">Submit</button>
-
-          {error && <div className={`error-message shake`}>{error}</div>}
-
-          <div className="auth-options">
-            <button 
-              type="button" 
-              onClick={() => viewLogin(false)} 
-              className={!isLogIn ? "selected" : ""}
-            >
-              Sign Up
-            </button>
-            <button 
-              type="button" 
-              onClick={() => viewLogin(true)} 
-              className={isLogIn ? "selected" : ""}
-            >
-              Login
-            </button>
+          <div className="options">
+            <label>
+              <input type="checkbox" /> Remember me
+            </label>
+            {isLogIn && (
+              <button
+                type="button"
+                className="forgot"
+                onClick={handleForgotPassword}
+              >
+                Forgot password?
+              </button>
+            )}
           </div>
+
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="btn login-btn">
+            {isLogIn ? "Login" : "Sign Up"}
+          </button>
         </form>
+
+        <div className="auth-switch">
+          {isLogIn ? (
+            <p>
+              Don’t have an account?{" "}
+              <button type="button" onClick={() => toggleMode(false)}>
+                Sign Up
+              </button>
+            </p>
+          ) : (
+            <p>
+              Already registered?{" "}
+              <button type="button" onClick={() => toggleMode(true)}>
+                Log In
+              </button>
+            </p>
+          )}
+        </div>
       </div>
+
+      {/** Render the ForgotPassword screen inline as a modal */}
+      {showForgot && (
+        <ForgotPassword onClose={() => setShowForgot(false)} />
+      )}
     </div>
   );
-};
-
-export default Auth;
+}

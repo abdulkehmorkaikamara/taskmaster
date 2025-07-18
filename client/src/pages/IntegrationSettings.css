@@ -1,0 +1,17 @@
+.integration-settings {
+  padding: 1rem;
+}
+.integration-section {
+  margin-bottom: 2rem;
+}
+.export-buttons .btn {
+  margin-right: 1rem;
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.export-buttons .btn:hover {
+  background: #0056b3;
+}

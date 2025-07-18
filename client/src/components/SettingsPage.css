@@ -1,21 +1,69 @@
-.settings-page {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1rem;
-  font-family: sans-serif;
+/* SettingsPage.css - Refined and Modernized */
+
+/* * ===================================================================
+ * CSS Variables for Theming
+ * ===================================================================
+ * Reusing the same variables from the Modal ensures a consistent
+ * design system across your entire application.
+ */
+:root {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Colors */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-warning: #f59e0b;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #4b5563;
+  --color-text-subtle: #9ca3af;
+  --color-background: #f9fafb; /* Use a light gray for the page background */
+  --color-surface: #ffffff;    /* Use white for cards/sections */
+  --color-border: #e5e7eb;
+  --color-focus-ring: rgba(59, 130, 246, 0.25);
+
+  /* Spacing & Radius */
+  --border-radius: 0.5rem; /* 8px */
+  --spacing-1: 0.25rem; /* 4px */
+  --spacing-2: 0.5rem;  /* 8px */
+  --spacing-3: 0.75rem; /* 12px */
+  --spacing-4: 1rem;    /* 16px */
+  --spacing-6: 1.5rem;  /* 24px */
+  --spacing-8: 2rem;    /* 32px */
 }
 
+/* ===================================================================
+ * Main Page Layout
+ * =================================================================== */
+.settings-page {
+  max-width: 700px;
+  margin: var(--spacing-8) auto;
+  padding: var(--spacing-4);
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+}
+
+/* ===================================================================
+ * Profile Section
+ * =================================================================== */
 .settings-profile {
   display: flex;
   align-items: center;
-  margin-bottom: 1.5rem;
+  gap: var(--spacing-6);
+  padding: var(--spacing-6);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-6);
 }
 
 .avatar-container {
   position: relative;
   width: 80px;
   height: 80px;
-  margin-right: 1rem;
+  flex-shrink: 0; /* Prevent avatar from shrinking */
 }
 
 .settings-avatar {
@@ -23,7 +71,8 @@
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #ccc;
+  border: 2px solid var(--color-border);
+  background-color: var(--color-background); /* Placeholder color */
 }
 
 .upload-overlay {
@@ -32,81 +81,120 @@
   background: rgba(0,0,0,0.6);
   color: white;
   border-radius: 50%;
-  width: 24px; height: 24px;
+  width: 28px; height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  border: 2px solid var(--color-surface);
+  transition: background-color 0.2s;
 }
-
+.upload-overlay:hover {
+  background: var(--color-primary);
+}
 .avatar-input {
   display: none;
 }
 
 .settings-userinfo {
-  flex: 1;
+  flex-grow: 1;
 }
 
 .profile-name-input {
   width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: 1.125rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.profile-name-input:hover {
+  border-color: var(--color-border);
+}
+.profile-name-input:focus {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
+.settings-badges {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+}
 .settings-badges .badge {
-  margin-right: 0.5rem;
-  padding: 0.3rem 0.6rem;
+  padding: var(--spacing-1) var(--spacing-3);
   border: none;
-  border-radius: 12px;
-  background: #eee;
-  cursor: pointer;
+  border-radius: 999px; /* Pill shape */
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  cursor: default;
 }
-
 .settings-badges .level {
-  background: #ffc107;
+  background: var(--color-warning);
+  color: var(--color-text-primary);
 }
 
+/* ===================================================================
+ * Upgrade Banner
+ * =================================================================== */
 .settings-upgrade {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f0f8ff;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
+  gap: var(--spacing-4);
+  background: linear-gradient(to right, #e0f2fe, #dbeafe); /* Light blue gradient */
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-6);
+  border: 1px solid #bae6fd;
 }
 
 .settings-upgrade .icon {
-  color: #ffcc00;
-  margin-right: 0.5rem;
+  color: #f59e0b; /* Golden yellow */
+  font-size: 1.5rem;
 }
 
 .upgrade-text {
   flex: 1;
+  font-weight: 500;
 }
 
 .btn-upgrade {
-  background: #3366ff;
+  background: var(--color-primary);
   color: white;
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-2) var(--spacing-4);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
+  font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
 }
-
 .btn-upgrade:hover {
-  background: #254eda;
+  background: var(--color-primary-hover);
+}
+.btn-upgrade:active {
+  transform: scale(0.98);
 }
 
+/* ===================================================================
+ * Settings Groups & Items
+ * =================================================================== */
 .settings-group {
-  margin-bottom: 1rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-4);
 }
 
 .settings-group-title {
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: bold;
+  padding: var(--spacing-4) 0;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .settings-item {
@@ -115,46 +203,121 @@
   align-items: center;
   background: transparent;
   border: none;
-  padding: 0.5rem 0;
+  padding: var(--spacing-3) 0;
   font-size: 1rem;
   cursor: pointer;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  text-align: left;
 }
-
-.settings-item .icon {
-  margin-right: 0.75rem;
+.settings-group .settings-item:first-of-type {
+    border-top: none;
 }
-
 .settings-item:hover {
-  background: #f9f9f9;
+  color: var(--color-primary);
+}
+.settings-item .icon {
+  margin-right: var(--spacing-3);
+  color: var(--color-text-secondary);
+  font-size: 1.25rem;
+  transition: color 0.2s;
+}
+.settings-item:hover .icon {
+  color: var(--color-primary);
 }
 
 .checkbox-group {
   display: flex;
   align-items: center;
-}
-
-.checkbox-group label {
-  margin-left: 0.5rem;
-}
-
-.btn-signout {
-  margin-top: 2rem;
+  justify-content: space-between;
   width: 100%;
-  padding: 0.6rem;
+}
+.checkbox-group label {
+  margin-left: var(--spacing-3);
+  flex-grow: 1;
+}
+.checkbox-group input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--color-primary);
+}
+
+
+/* ===================================================================
+ * Sign Out Button
+ * =================================================================== */
+.btn-signout {
+  margin-top: var(--spacing-6);
+  width: 100%;
+  padding: var(--spacing-3);
   font-size: 1rem;
-  background: #ff5252;
+  font-weight: 600;
+  background: var(--color-danger);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
 }
-
 .btn-signout:hover {
-  background: #e04848;
+  background: var(--color-danger-hover);
+}
+.btn-signout:active {
+  transform: scale(0.99);
 }
 
 .version {
-  margin-left: 0.5rem;
-  color: #666;
-  font-size: 0.9rem;
+  text-align: center;
+  margin-top: var(--spacing-4);
+  color: var(--color-text-subtle);
+  font-size: 0.875rem;
+}
+
+/* Add this to your SettingsPage.css */
+
+.badge-container {
+  position: relative;
+  display: inline-block;
+}
+
+.badge-tooltip {
+  visibility: hidden;
+  width: 220px;
+  background-color: #333;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Position above the button */
+  left: 50%;
+  margin-left: -110px; /* Use half of the width to center */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.badge-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+.badge-container:hover .badge-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.badge-tooltip ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.badge-tooltip li {
+    margin-bottom: 5px;
 }
