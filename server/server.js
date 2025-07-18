@@ -29,17 +29,32 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // ── CONSTANTS ─────────────────────────────────────────────────────
 const PORT          = process.env.PORT || 8000;
 const FRONTEND      = process.env.FRONTEND_URL || 'http://localhost:3000';
-const CLIENT_ORIGIN = (process.env.CLIENT_URL || FRONTEND)
-  .split(',')
-  .map(o => o.trim());
+
+// ===================================================================
+// FINAL CORS CONFIGURATION
+// ===================================================================
+const whitelist = (process.env.CLIENT_ORIGIN || '').split(',');
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.error(`CORS Error: Request from origin ${origin} was blocked.`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
 
 // ── APP INITIALISATION ────────────────────────────────────────────
 const app = express();
-app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+// Use the new, robust corsOptions here
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 /* -----------------------------------------------------------------
-   STRIPE WEBHOOK – This is a public endpoint from Stripe.
+   STRIPE WEBHOOK
    ----------------------------------------------------------------- */
 app.post('/billing/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   let event;
@@ -69,7 +84,7 @@ app.post('/billing/webhook', express.raw({ type: 'application/json' }), async (r
 app.use(express.json());
 
 // ===================================================================
-// PUBLIC API & WEBHOOKS (Restored Section)
+// PUBLIC API & WEBHOOKS
 // ===================================================================
 function requireApiKey(req, res, next) {
   if (req.headers['x-api-key'] !== process.env.MY_API_KEY) return res.status(401).json({ error: 'Invalid API Key' });
@@ -82,18 +97,6 @@ function fireWebhooks(event, payload) {
     fetch(w.url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ event, payload }) }).catch(console.error);
   });
 }
-
-app.get('/api/tasks', requireApiKey, async (_, res) => {
-  const { rows } = await pool.query('SELECT * FROM todos');
-  res.json(rows);
-});
-
-app.post('/api/webhooks/register', requireApiKey, (req, res) => {
-  const { url, event } = req.body;
-  webhooks.push({ url, event });
-  res.json({ success: true });
-});
-
 
 // ===================================================================
 // PROTECTED ROUTES (Using requireAuth middleware)
