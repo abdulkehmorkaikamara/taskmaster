@@ -36,14 +36,7 @@ const app = express();
 // ── CORS CONFIGURATION ────────────────────────────────────────────
 const whitelist = [FRONTEND_URL, 'http://localhost:3000'];
 const corsOptions = {
-  origin(origin, callback) {
-    console.log('🛂 CORS check, incoming Origin:', origin);
-    // Allow requests with no origin (e.g. mobile clients or curl)
-    if (!origin || whitelist.includes(origin)) {
-      return callback(null, true);
-    }
-    callback(new Error(`Not allowed by CORS: ${origin}`));
-  },
+  origin: whitelist,
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
