@@ -450,6 +450,7 @@ cron.schedule('0 8 * * *', async () => {
   console.log('⏰ Daily overdue task check');
   const today = new Date().toISOString();
   try {
+    // This `pool` is the correctly configured one from db.js
     const { rows } = await pool.query('SELECT id,user_email,title FROM todos WHERE progress<100 AND start_at < $1', [today]);
     for (const t of rows) {
       if (!t.user_email) continue;
@@ -461,9 +462,11 @@ cron.schedule('0 8 * * *', async () => {
 });
 
 cron.schedule('* * * * *', async () => {
+  console.log('⏰ Checking for upcoming tasks...');
   const now = new Date();
   const soon = new Date(now.getTime() + 5 * 60 * 1000);
   try {
+    // This `pool` is also the correctly configured one
     const { rows } = await pool.query(
       `SELECT id, user_email, title
          FROM todos
@@ -481,6 +484,7 @@ cron.schedule('* * * * *', async () => {
     console.error('❌ Upcoming task cron error:', err);
   }
 });
+
 
 // ── START SERVER ────────────────────────────────────────────────
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
