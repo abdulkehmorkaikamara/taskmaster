@@ -1,18 +1,21 @@
 // src/components/BottomNav.js
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckSquare, LayoutDashboard, Columns, Timer, Settings } from 'lucide-react';
+import { CheckSquare, LayoutDashboard, Columns, Timer, Settings, BarChart2, Calendar } from 'lucide-react';
 import './BottomNav.css';
 
 export default function BottomNav({ activePanel, setActivePanel }) {
   const { t } = useTranslation();
 
+  // The navItems array now correctly includes Dashboard and Timer
   const navItems = [
-    { id: 'tasks', label: t('buttons.tasks', 'Tasks'), icon: <CheckSquare /> },
-    { id: 'dashboard', label: t('buttons.dashboard', 'Dashboard'), icon: <LayoutDashboard /> },
-    { id: 'boards', label: t('buttons.boards', 'Boards'), icon: <Columns /> },
-    { id: 'timer', label: t('buttons.timer', 'Timer'), icon: <Timer /> },
-    { id: 'settings', label: t('buttons.settings', 'Settings'), icon: <Settings /> },
+    { id: 'tasks', label: t('buttons.tasks', 'Tasks'), icon: <CheckSquare size={24} /> },
+    { id: 'dashboard', label: t('buttons.dashboard', 'Dashboard'), icon: <LayoutDashboard size={24} /> },
+    { id: 'boards', label: t('buttons.boards', 'Boards'), icon: <Columns size={24} /> },
+    { id: 'timer', label: t('buttons.timer', 'Timer'), icon: <Timer size={24} /> },
+    { id: 'calendar', label: t('buttons.calendar', 'Calendar'), icon: <Calendar size={24} /> },
+    { id: 'analytics', label: t('buttons.analytics', 'Analytics'), icon: <BarChart2 size={24} /> },
+    { id: 'settings', label: t('buttons.settings', 'Settings'), icon: <Settings size={24} /> },
   ];
 
   return (

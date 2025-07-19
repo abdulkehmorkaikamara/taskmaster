@@ -2,7 +2,7 @@
 
 /* --- Default Desktop Styles --- */
 /* By default, hide the mobile-only elements on larger screens */
-.mobile-header, .bottom-nav {
+.mobile-header, .bottom-nav, .floating-add-btn {
   display: none;
 }
 
@@ -16,7 +16,7 @@
   }
 
   /* --- Show Mobile Elements --- */
-  .mobile-header, .bottom-nav {
+  .mobile-header, .bottom-nav, .floating-add-btn {
     display: flex;
   }
 
@@ -26,9 +26,8 @@
     min-height: 100vh;
     border-radius: 0;
     padding: 0;
-    /* Add space for the fixed header and footer */
-    padding-top: 60px;
-    padding-bottom: 60px;
+    padding-top: 60px;    /* Space for the fixed mobile header */
+    padding-bottom: 60px; /* Space for the fixed bottom nav */
     box-shadow: none;
   }
 

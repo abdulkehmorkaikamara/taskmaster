@@ -6,12 +6,17 @@ import './MobileHeader.css';
 export default function MobileHeader({ listName, onSignOut, onSettingsClick, onShareClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // This function now correctly calls the prop from App.js
+  // These functions now correctly call the props from App.js and close the menu
   const handleSettings = () => {
     onSettingsClick();
-    setIsMenuOpen(false); // Close the menu after clicking
+    setIsMenuOpen(false);
   };
   
+  const handleShare = () => {
+    onShareClick();
+    setIsMenuOpen(false);
+  }
+
   const handleProfile = () => alert('Navigate to Profile');
 
   return (
@@ -37,7 +42,7 @@ export default function MobileHeader({ listName, onSignOut, onSettingsClick, onS
           <nav className="menu-nav">
             <button onClick={handleProfile}><User className="icon" /> Profile</button>
             <button onClick={handleSettings}><Settings className="icon" /> Settings</button>
-            <button onClick={onShareClick}><Share2 className="icon" /> Share</button>
+            <button onClick={handleShare}><Share2 className="icon" /> Share</button>
             <button onClick={onSignOut} className="signout-button"><LogOut className="icon" /> Sign Out</button>
           </nav>
         </div>
