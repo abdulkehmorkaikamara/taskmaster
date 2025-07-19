@@ -1,55 +1,80 @@
 /* src/Responsive.css */
 
-/* This media query applies styles only on screens 768px or smaller */
+/* --- Default Desktop Styles --- */
+/* By default, hide the mobile-only elements */
+.mobile-header-wrapper, .bottom-nav {
+  display: none;
+}
+
+
+/* --- Mobile Styles (for screens 768px or smaller) --- */
 @media (max-width: 768px) {
-  /* Make the main app container take up the full width */
+  /* --- Hide Desktop Elements --- */
+  /* This is the key part that was missing before */
+  .list-header, .controls {
+    display: none !important;
+  }
+
+  /* --- Show Mobile Elements --- */
+  .mobile-header-wrapper, .bottom-nav {
+    display: flex;
+  }
+
+  /* --- Global App Layout on Mobile --- */
   .app {
     width: 100%;
     min-height: 100vh;
     border-radius: 0;
     padding: 0;
-    padding-top: 70px; /* Add padding to account for the fixed mobile header */
-    padding-bottom: 70px; /* Add padding for the bottom nav bar */
+    /* Add space for the fixed header and footer */
+    padding-top: 60px;
+    padding-bottom: 60px;
     box-shadow: none;
   }
 
-  /* Make the filter bar more compact and scrollable */
+  /* --- Filter Bar --- */
   .filters {
-    padding: 0.5rem;
+    padding: 0.75rem;
     overflow-x: auto;
     white-space: nowrap;
     border-bottom: 1px solid var(--color-border, #e5e7eb);
   }
 
-  /* Style task list items for mobile */
+  /* --- Task List --- */
+  .task-list-container {
+      padding: 0.75rem;
+  }
   .list-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
   .list-item .button-container {
     width: 100%;
     justify-content: flex-end;
   }
 
-  /* Make Kanban board columns scroll horizontally */
+  /* --- Kanban Board --- */
   .kanban-board {
     display: flex;
     overflow-x: auto;
     padding: 1rem;
     gap: 1rem;
-    /* This makes scrolling smooth on iOS */
-    -webkit-overflow-scrolling: touch; 
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
   }
   .kanban-column {
-    flex: 0 0 280px; /* Give each column a fixed width so they don't shrink */
+    flex: 0 0 300px;
+    scroll-snap-align: start;
   }
 
-  /* Make the modal full-screen on mobile */
+  /* --- Modal --- */
   .modal {
     width: 100vw;
     height: 100vh;
     border-radius: 0;
     max-width: 100%;
+    max-height: 100%;
+    padding: 1.5rem;
   }
 }
