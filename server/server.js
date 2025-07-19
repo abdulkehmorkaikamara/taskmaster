@@ -15,7 +15,7 @@ const fetch          = require('node-fetch');
 const crypto         = require('crypto');
 const stripe         = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const OpenAI         = require('openai');
-
+        
 // ── PROJECT IMPORTS ───────────────────────────────────────────────
 const pool             = require('./db');
 const emailController  = require('./controllers/emailController');
@@ -27,83 +27,186 @@ const { inviteMember } = require('./controllers/listsController');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // ── CONSTANTS & CONFIG ────────────────────────────────────────────
-const PORT         = process.env.PORT || 8000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const PORT          = process.env.PORT || 8000;
+const FRONTEND_URL  = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+// ===================================================================
+// FINAL CORS CONFIGURATION
+// ===================================================================
+const whitelist = (process.env.CLIENT_ORIGIN || '').split(',');
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.error(`CORS Error: Request from origin ${origin} was blocked.`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
 
 // ── APP INITIALISATION ────────────────────────────────────────────
 const app = express();
-
-// ── CORS CONFIGURATION ────────────────────────────────────────────
-const whitelist = [FRONTEND_URL];
-const corsOptions = {
-  origin: whitelist,
-  credentials: true,
-};
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
-// ── COOKIE PARSER ─────────────────────────────────────────────────
 app.use(cookieParser());
 
-// ── STRIPE WEBHOOK (RAW BODY PARSER) ──────────────────────────────
-app.post(
-  '/billing/webhook',
-  express.raw({ type: 'application/json' }),
-  async (req, res) => {
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        req.headers['stripe-signature'],
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } catch (err) {
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    if (event.type === 'checkout.session.completed') {
-      const email = event.data.object.customer_details.email;
-      try {
-        await pool.query('UPDATE users SET is_premium = TRUE WHERE email = $1', [email]);
-        console.log(`✅ ${email} marked premium`);
-      } catch (e) {
-        console.error('❌ DB update error:', e);
-      }
-    }
-    res.json({ received: true });
+/* -----------------------------------------------------------------
+   STRIPE WEBHOOK - This must come before express.json()
+   ----------------------------------------------------------------- */
+app.post('/billing/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      req.headers['stripe-signature'],
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-);
 
-// ── JSON BODY PARSER ──────────────────────────────────────────────
+  if (event.type === 'checkout.session.completed') {
+    const email = event.data.object.customer_details.email;
+    try {
+      await pool.query('UPDATE users SET is_premium = TRUE WHERE email = $1', [email]);
+      console.log(`✅ ${email} marked premium`);
+    } catch (e) {
+      console.error('❌ DB update error:', e);
+    }
+  }
+  res.json({ received: true });
+});
+
 app.use(express.json());
+
+// ===================================================================
+// PROTECTED ROUTES (Using requireAuth middleware)
+// ===================================================================
+
+// --- USER SETTINGS ---
+app.put('/users/settings', requireAuth, async (req, res) => {
+  const { settings } = req.body;
+  if (!settings) {
+    return res.status(400).json({ error: 'Settings object is required.' });
+  }
+  try {
+    const { rows } = await pool.query(
+      'UPDATE users SET settings = settings || $1 WHERE email = $2 RETURNING settings',
+      [settings, req.user.email]
+    );
+    res.status(200).json(rows[0].settings);
+  } catch (err) {
+    console.error('❌ Save settings error:', err);
+    res.status(500).json({ error: 'Failed to save settings.' });
+  }
+});
+
+app.get('/users/settings', requireAuth, async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT settings FROM users WHERE email = $1', [req.user.email]);
+        if (rows.length === 0) return res.status(404).json({ error: "User not found" });
+        res.status(200).json(rows[0].settings || {});
+    } catch (err) {
+        console.error('❌ Get settings error:', err);
+        res.status(500).json({ error: 'Failed to get settings.' });
+    }
+});
+
+// --- BILLING ---
+app.post('/billing/checkout', requireAuth, async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      customer_email: req.user.email,
+      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+      success_url: `${FRONTEND_URL}/profile?upgrade=success`,
+      cancel_url:  `${FRONTEND_URL}/profile?upgrade=cancel`
+    });
+    return res.json({ url: session.url });
+  } catch (err) {
+    console.error('❌ Stripe checkout error:', err);
+    res.status(500).json({ error: 'Failed to create checkout session.' });
+  }
+});
+
+// --- USER INFO ---
+app.get('/users/me', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT email, is_premium FROM users WHERE email = $1', [req.user.email]);
+    if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('❌ Fetch /users/me error:', err);
+    res.status(500).json({ error: 'Failed to fetch user.' });
+  }
+});
+
+// --- TODOS ---
+app.get("/todos/:userEmail", requireAuth, async (req, res) => {
+  if (req.params.userEmail !== req.user.email) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  try {
+    const { rows } = await pool.query(`SELECT * FROM todos WHERE user_email = $1 ORDER BY start_at ASC NULLS LAST`, [req.user.email]);
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Fetch todos error:", err);
+    res.status(500).json([]);
+  }
+});
+
+app.post("/todos", requireAuth, async (req, res) => {
+  const { title, progress, start_at, is_urgent, is_important, list_name, tags, subtasks, reminder_offset } = req.body;
+  const id = uuidv4();
+  try {
+    const query = `INSERT INTO todos (id, user_email, title, progress, start_at, is_urgent, is_important, list_name, tags, subtasks, reminder_offset, reminder_sent) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false) RETURNING *`;
+    const { rows } = await pool.query(query, [id, req.user.email, title, progress, start_at, is_urgent, is_important, list_name, tags, JSON.stringify(subtasks), reminder_offset]);
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error("❌ Create todo error:", err);
+    res.status(500).json({ error: err.detail || err.message });
+  }
+});
+
+app.put("/todos/:id", requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { title, progress, start_at, is_urgent, is_important, list_name, tags, subtasks, reminder_offset } = req.body;
+  try {
+    const query = `UPDATE todos SET title = $1, progress = $2, start_at = $3, is_urgent = $4, is_important = $5, list_name = $6, tags = $7, subtasks = $8, reminder_offset = $9, reminder_sent = CASE WHEN $2 < 100 THEN false ELSE reminder_sent END WHERE id = $10 AND user_email = $11 RETURNING *`;
+    const { rows } = await pool.query(query, [title, progress, start_at, is_urgent, is_important, list_name, tags, JSON.stringify(subtasks), reminder_offset, id, req.user.email]);
+    if (rows.length === 0) return res.status(404).json({ error: "Task not found or you do not have permission to edit it." });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("❌ Update todo error:", err);
+    res.status(500).json({ error: err.detail || err.message });
+  }
+});
+
+app.delete('/todos/:id', requireAuth, async (req, res) => {
+  try {
+    const deleteQuery = await pool.query('DELETE FROM todos WHERE id=$1 AND user_email = $2', [req.params.id, req.user.email]);
+    if (deleteQuery.rowCount === 0) {
+        return res.status(404).json({ message: 'Todo not found or you do not have permission to delete it.' });
+    }
+    res.status(200).json({ message: 'Todo deleted successfully!' });
+  } catch (err) {
+    console.error('❌ Delete todo error:', err);
+    res.status(500).json({ error: 'Failed to delete todo due to a server error.' });
+  }
+});
 
 // ===================================================================
 // PUBLIC ROUTES
 // ===================================================================
 
-// TAG CLASSIFICATION
-app.post('/todos/classify-tags', async (req, res) => {
-  try {
-    const prompt = `Given a task title, return a JSON array of tags (choose from work, personal, email, phone, urgent). Title: "${req.body.title}" Return exactly like: [\"work\",\"email\"]`;
-    const response = await openai.completions.create({
-      model: 'text-davinci-003',
-      prompt,
-      max_tokens: 50,
-      temperature: 0.2,
-    });
-    res.json({ tags: JSON.parse(response.choices[0].text) });
-  } catch (err) {
-    console.error('❌ Tag classification error:', err);
-    res.status(500).json({ error: 'Failed to classify tags.' });
-  }
-});
-
-// SIGNUP
+// --- AUTHENTICATION ---
 app.post('/signup', async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password required.' });
-  }
+  if (!email || !password) return res.status(400).json({ error: "Email and password required." });
   const hash = bcrypt.hashSync(password, 10);
   try {
     await pool.query('INSERT INTO users(email,hashed_password) VALUES($1,$2)', [email, hash]);
@@ -115,18 +218,13 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// LOGIN
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (!rows.length) {
-      return res.status(404).json({ detail: 'User not found.' });
-    }
-    const valid = await bcrypt.compare(password, rows[0].hashed_password);
-    if (!valid) {
-      return res.status(401).json({ detail: 'Invalid credentials.' });
-    }
+    const { rows } = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
+    if (!rows.length) return res.status(404).json({ detail: 'User not found.' });
+    const passwordMatch = await bcrypt.compare(password, rows[0].hashed_password);
+    if (!passwordMatch) return res.status(401).json({ detail: 'Invalid credentials.' });
     const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ email: rows[0].email, token });
   } catch (err) {
@@ -135,51 +233,13 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// FORGOT PASSWORD
-app.post('/auth/forgot-password', async (req, res) => {
-  const { email } = req.body;
-  const { rows } = await pool.query('SELECT 1 FROM users WHERE email = $1', [email]);
-  if (!rows.length) {
-    return res.status(404).json({ error: 'No such user.' });
-  }
-  const token   = crypto.randomBytes(32).toString('hex');
-  const expires = new Date(Date.now() + 3600000);
-  await pool.query('INSERT INTO password_resets(email,token,expires_at) VALUES($1,$2,$3)', [email, token, expires]);
-  const link = `${FRONTEND_URL}/reset-password?token=${token}`;
-  await emailController.sendEmail(
-    email,
-    'TaskMaster password reset',
-    `Click to reset your password:\n\n${link}\n\nExpires in 1 hour.`
-  );
-  res.json({ message: 'Password reset email sent.' });
-});
-
-// RESET PASSWORD
-app.post('/auth/reset-password', async (req, res) => {
-  const { token, newPassword } = req.body;
-  const { rows } = await pool.query('SELECT email,expires_at FROM password_resets WHERE token = $1', [token]);
-  if (!rows.length) {
-    return res.status(400).json({ error: 'Invalid token.' });
-  }
-  if (new Date() > rows[0].expires_at) {
-    await pool.query('DELETE FROM password_resets WHERE token = $1', [token]);
-    return res.status(400).json({ error: 'Token expired.' });
-  }
-  const hash = bcrypt.hashSync(newPassword, 10);
-  await pool.query('UPDATE users SET hashed_password = $1 WHERE email = $2', [hash, rows[0].email]);
-  await pool.query('DELETE FROM password_resets WHERE token = $1', [token]);
-  res.json({ message: 'Password has been reset.' });
-});
-
 // ===================================================================
 // CRON REMINDERS
 // ===================================================================
 cron.schedule('0 8 * * *', async () => {
   console.log('⏰ Daily overdue task check');
   try {
-    const { rows } = await pool.query(
-      `SELECT id, user_email, title FROM todos WHERE progress < 100 AND start_at < NOW()`
-    );
+    const { rows } = await pool.query(`SELECT id, user_email, title FROM todos WHERE progress < 100 AND start_at < NOW()`);
     for (const t of rows) {
       if (!t.user_email) continue;
       await emailController.sendEmail(t.user_email, 'Overdue Task', `Your task \"${t.title}\" is overdue.`);
