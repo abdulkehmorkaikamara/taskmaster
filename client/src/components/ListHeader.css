@@ -101,3 +101,17 @@
     border-top: 1px solid var(--surface-shadow);
   }
 }
+/* Add to src/components/ListHeader.css */
+.mobile-header {
+  display: none; /* Hidden by default */
+}
+
+/* On screens 768px or less */
+@media (max-width: 768px) {
+  .desktop-header {
+    display: none; /* Hide the desktop header */
+  }
+  .mobile-header {
+    display: flex; /* Show the mobile header */
+  }
+}

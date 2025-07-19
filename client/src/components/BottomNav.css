@@ -1,0 +1,54 @@
+/* src/components/BottomNav.css */
+.bottom-nav {
+  display: none; /* Hidden on desktop by default */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--color-surface, #fff);
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary, #6b7280);
+  font-size: 0.65rem;
+  font-weight: 500;
+  flex-grow: 1;
+  height: 100%;
+  transition: color 0.2s;
+}
+
+.nav-item svg {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 4px;
+}
+
+.nav-item.active {
+  color: var(--color-primary, #3b82f6);
+}
+
+/* This media query shows the bottom nav on mobile and hides the old controls */
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+  }
+  .app {
+    /* Add padding to the bottom of the app so content isn't hidden by the nav bar */
+    padding-bottom: 70px;
+  }
+  .controls {
+    display: none; /* Hide the old button stack on mobile */
+  }
+}

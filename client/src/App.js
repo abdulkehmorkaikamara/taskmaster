@@ -29,6 +29,10 @@ import ActivityLog         from "./components/ActivityLog";
 import CommentsSection     from "./components/CommentsSection";
 import AnalyticsDashboard  from "./components/AnalyticsDashboard";
 import { authenticatedFetch } from "./api";
+import BottomNav from './components/BottomNav'; // 1. Import the new component
+import './Responsive.css'; // Add this line
+import './components/BottomNav.css'; // 2. Import its CSS
+
 
 import NotificationsSettings from "./pages/NotificationsSettings";
 import DateTimeSettings      from "./pages/DateTimeSettings";
@@ -206,6 +210,7 @@ function App() {
       {activePanel==="analytics" && <AnalyticsDashboard isPremium={isPremium} />}
       {showModal && modalMode==="shareList" && (<ShareListModal listId={activeListId} onClose={()=>setShowModal(false)} />)}
       {showModal && modalMode!=="shareList" && (<Modal mode={modalMode} task={editTask} setShowModal={setShowModal} getData={getData} />)}
+      <BottomNav activePanel={activePanel} setActivePanel={setActivePanel} />
     </div>
   );
   

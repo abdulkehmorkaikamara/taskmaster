@@ -1,0 +1,55 @@
+/* src/Responsive.css */
+
+/* This media query applies styles only on screens 768px or smaller */
+@media (max-width: 768px) {
+  /* Make the main app container take up the full width */
+  .app {
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+    padding: 0;
+    padding-top: 70px; /* Add padding to account for the fixed mobile header */
+    padding-bottom: 70px; /* Add padding for the bottom nav bar */
+    box-shadow: none;
+  }
+
+  /* Make the filter bar more compact and scrollable */
+  .filters {
+    padding: 0.5rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+  }
+
+  /* Style task list items for mobile */
+  .list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .list-item .button-container {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Make Kanban board columns scroll horizontally */
+  .kanban-board {
+    display: flex;
+    overflow-x: auto;
+    padding: 1rem;
+    gap: 1rem;
+    /* This makes scrolling smooth on iOS */
+    -webkit-overflow-scrolling: touch; 
+  }
+  .kanban-column {
+    flex: 0 0 280px; /* Give each column a fixed width so they don't shrink */
+  }
+
+  /* Make the modal full-screen on mobile */
+  .modal {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    max-width: 100%;
+  }
+}
