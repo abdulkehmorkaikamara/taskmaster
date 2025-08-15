@@ -2,12 +2,13 @@
 
 import React, { useContext, useMemo } from 'react';
 import { PremiumContext } from '../context/PremiumContext';
+import { Lock } from 'lucide-react';
 import {
   PieChart,
   Pie,
   Cell,
-  Tooltip as PieTooltip,
-  ResponsiveContainer as PieResponsive
+  Tooltip,
+  ResponsiveContainer
 } from 'recharts';
 import {
   BarChart,
@@ -15,16 +16,12 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip as BarTooltip,
-  ResponsiveContainer as BarResponsive,
-  Cell as BarCell
 } from 'recharts';
 import './Dashboard.css';
 
-export default function Dashboard({ tasks }) {
+export default function Dashboard({ tasks, onBack }) {
   const { isPremium } = useContext(PremiumContext);
 
-  // Prepare pie-chart data
   const completed = tasks.filter(t => t.progress === 100).length;
   const pending   = tasks.length - completed;
   const pieData    = [
@@ -32,7 +29,6 @@ export default function Dashboard({ tasks }) {
     { name: 'Pending',   value: pending }
   ];
 
-  // Prepare bar-chart data (by list_name)
   const barData = useMemo(() => {
     const map = {};
     tasks.forEach(t => {
@@ -42,12 +38,13 @@ export default function Dashboard({ tasks }) {
     return Object.entries(map).map(([name, value]) => ({ name, value }));
   }, [tasks]);
 
-  // Advanced analytics: monthly breakdown (premium-only)
   const monthlyData = useMemo(() => {
     if (!isPremium) return [];
     const map = {};
     tasks.forEach(t => {
-      const key = new Date(t.date).toLocaleString('default', {
+      // FIX: Use 'start_at' which is the correct property from your tasks
+      if (!t.start_at) return;
+      const key = new Date(t.start_at).toLocaleString('default', {
         month: 'short',
         year:  'numeric'
       });
@@ -59,11 +56,12 @@ export default function Dashboard({ tasks }) {
   const COLORS = ['#81c784', '#e57373', '#64b5f6', '#ffb74d'];
 
   return (
-    <div className="charts-container">
-      {/* Pie Chart: Task Status */}
-      <div className="chart">
+    <div className="dashboard-container">
+      <button className="btn btn-outline back-button" onClick={onBack}>&larr; Back to Tasks</button>
+
+      <div className="dashboard-card">
         <h4>Task Status</h4>
-        <PieResponsive width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
               data={pieData}
@@ -71,58 +69,58 @@ export default function Dashboard({ tasks }) {
               cy="50%"
               outerRadius={60}
               dataKey="value"
-              label
-              animationDuration={800}
+              labelLine={false}
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
             >
               {pieData.map((entry, idx) => (
-                <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
               ))}
             </Pie>
-            <PieTooltip />
+            <Tooltip />
           </PieChart>
-        </PieResponsive>
+        </ResponsiveContainer>
       </div>
 
-      {/* Bar Chart: Tasks by List */}
-      <div className="chart">
+      <div className="dashboard-card">
         <h4>Tasks by List</h4>
-        <BarResponsive width="100%" height={200}>
-          <BarChart data={barData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <BarTooltip />
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={barData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+            <XAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+            <YAxis allowDecimals={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+            <Tooltip />
             <Bar dataKey="value" animationDuration={800}>
               {barData.map((entry, idx) => (
-                <BarCell key={idx} fill={COLORS[idx % COLORS.length]} />
+                <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
               ))}
             </Bar>
           </BarChart>
-        </BarResponsive>
+        </ResponsiveContainer>
       </div>
 
-      {/* Premium-only: Monthly Breakdown */}
       {isPremium ? (
-        <div className="chart">
+        <div className="dashboard-card">
           <h4>Tasks by Month</h4>
-          <BarResponsive width="100%" height={200}>
-            <BarChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis allowDecimals={false} />
-              <BarTooltip />
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={monthlyData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <XAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+              <YAxis allowDecimals={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+              <Tooltip />
               <Bar dataKey="value" animationDuration={800}>
                 {monthlyData.map((entry, idx) => (
-                  <BarCell key={idx} fill={COLORS[idx % COLORS.length]} />
+                  <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
-          </BarResponsive>
+          </ResponsiveContainer>
         </div>
       ) : (
-        <div className="chart upgrade-hint">
+        <div className="dashboard-card upgrade-hint">
+          <Lock size={28} className="icon-premium" />
           <h4>Advanced Analytics</h4>
-          <p>Upgrade to Premium to unlock monthly breakdowns.</p>
+          <p>Upgrade to Premium to see monthly breakdowns and more.</p>
+          <button className="btn btn-primary">Upgrade</button>
         </div>
       )}
     </div>

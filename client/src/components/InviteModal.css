@@ -1,0 +1,61 @@
+/* src/components/InviteModal.css */
+
+/* The .overlay and .modal classes get their base style from the global CSS. */
+/* This file provides styles specific to the InviteModal layout. */
+
+.invite-modal {
+  max-width: 400px; /* A good width for a simple form modal */
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.close-button {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  color: var(--text-secondary);
+  border-radius: 50%;
+}
+.close-button:hover {
+  background: var(--background) !important;
+  color: var(--text-primary);
+}
+
+.invite-modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.error-message {
+  color: var(--danger);
+  background: var(--danger-light);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  text-align: center;
+}

@@ -1,52 +1,54 @@
 // src/context/PremiumContext.js
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { useCookies } from 'react-cookie';
-import { authenticatedFetch } from '../api'; // Using our custom fetch wrapper
+import { useCookies } from "react-cookie";
+import { authenticatedFetch } from '../api'; // Your custom fetch wrapper
 
-// Create the context
 export const PremiumContext = createContext();
 
-// Create the provider component
+
 export const PremiumProvider = ({ children }) => {
-  const [cookies] = useCookies(['AuthToken']);
-  const authToken = cookies.AuthToken;
+  const [cookies] = useCookies(["AuthToken"]);
+  const token = cookies.AuthToken;
 
   const [isPremium, setIsPremium] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start as true
   const [error, setError] = useState(null);
 
-  // Function to check the user's premium status from the server
+  // Checks the user's premium status from the server
   const checkStatus = useCallback(async () => {
-    if (!authToken) {
+    if (!token) {
       setIsPremium(false);
+      setIsLoading(false);
       return;
     }
+    
+    setIsLoading(true);
     try {
-      // --- THE FIX: Use authenticatedFetch here as well ---
       const response = await authenticatedFetch(`${process.env.REACT_APP_SERVERURL}/users/me`);
-      
       if (!response.ok) throw new Error('Could not verify status');
-      
+
       const data = await response.json();
       setIsPremium(!!data.is_premium);
     } catch (err) {
-      // The authenticatedFetch helper will handle the 401 redirect,
-      // but we can still log other potential errors.
-      if (err.message.indexOf('Session expired') === -1) {
-        setIsPremium(false);
+      // Don't show an error if the session simply expired
+      if (!err.message.includes('Session expired')) {
         console.error("Premium status check failed:", err);
       }
+      setIsPremium(false);
+    } finally {
+      setIsLoading(false);
     }
-  }, [authToken]);
+  }, [token]);
 
-  // Check status on initial load
   useEffect(() => {
     checkStatus();
   }, [checkStatus]);
 
-  // The main function to handle the upgrade process
+  // Handles the premium upgrade process by redirecting to Stripe
   const upgradeToPremium = async () => {
-    if (!authToken) {
+    console.log("Upgrade button clicked! The upgradeToPremium function has started."); // <-- ADD THIS LINE
+
+    if (!token) {
       setError("You must be logged in to upgrade.");
       return;
     }
@@ -60,28 +62,26 @@ export const PremiumProvider = ({ children }) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to create checkout session.');
       }
-      
+
       const { url } = await response.json();
+      if (!url) throw new Error("Checkout URL not found in server response.");
 
-      if (!url) {
-        throw new Error("Checkout URL not found in server response.");
-      }
-
+      // Redirect to Stripe
       window.location.href = url;
 
     } catch (err) {
-      if (err.message.indexOf('Session expired') === -1) {
         console.error("An error occurred during the upgrade process:", err);
         setError(err.message);
+    } finally {
         setIsLoading(false);
-      }
     }
   };
 
-  const value = {
+  // The value provided to all consuming components
+  const contextValue = {
     isPremium,
     isLoading,
     error,
@@ -90,7 +90,7 @@ export const PremiumProvider = ({ children }) => {
   };
 
   return (
-    <PremiumContext.Provider value={value}>
+    <PremiumContext.Provider value={contextValue}>
       {children}
     </PremiumContext.Provider>
   );

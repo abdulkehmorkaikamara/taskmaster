@@ -1,53 +1,50 @@
 // src/components/EisenhowerMatrix.js
 
-import React from 'react';
+import React, { useState } from 'react';
 import './EisenhowerMatrix.css';
-
 
 /**
  * EisenhowerMatrix displays tasks in a 2x2 grid based on urgency & importance.
  * Users can drag tasks between quadrants to toggle their flags.
  */
-export default function EisenhowerMatrix({ tasks, getData }) {
+export default function EisenhowerMatrix({ tasks, onUpdateTask, onBack }) {
+  const [dragOverQuadrant, setDragOverQuadrant] = useState(null);
+
   // Drag handlers
   const handleDragStart = (e, id) => {
     e.dataTransfer.setData('text/plain', id);
   };
 
-  const handleDragOver = e => {
+  const handleDragEnter = (e, key) => {
     e.preventDefault();
+    setDragOverQuadrant(key);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOverQuadrant(null);
+  };
+
+  const handleDragOver = e => {
+    e.preventDefault(); // Necessary to allow dropping
   };
 
   // On drop, update is_urgent/is_important
   const handleDrop = async (e, isUrgent, isImportant) => {
     e.preventDefault();
+    setDragOverQuadrant(null); // Reset visual feedback
     const id = e.dataTransfer.getData('text/plain');
     const task = tasks.find(t => t.id.toString() === id);
     if (!task) return;
 
     // Only update if values changed
     if (task.is_urgent !== isUrgent || task.is_important !== isImportant) {
-      const updated = {
-        user_email:   task.user_email,
-        title:        task.title,
-        progress:     task.progress,
-        date:         task.date,
-        time:         task.time,
-        is_urgent:    isUrgent,
-        is_important: isImportant,
-        list_name:    task.list_name
-      };
-
       try {
-        const res = await fetch(
-          `${process.env.REACT_APP_SERVERURL}/todos/${task.id}`,
-          {
-            method:  'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(updated)
-          }
-        );
-        if (res.ok) getData();
+        // Use the onUpdateTask function passed from App.js for consistency
+        onUpdateTask(task.id, {
+          is_urgent: isUrgent,
+          is_important: isImportant
+        });
       } catch (err) {
         console.error('Error updating task flags:', err);
       }
@@ -56,56 +53,41 @@ export default function EisenhowerMatrix({ tasks, getData }) {
 
   // Quadrant definitions
   const quadrants = [
-    {
-      key: 'urgent-important',
-      title: 'Urgent & Important',
-      filter: t => t.is_urgent && t.is_important,
-      flags: { isUrgent: true, isImportant: true }
-    },
-    {
-      key: 'not-urgent-important',
-      title: 'Important (Not Urgent)',
-      filter: t => !t.is_urgent && t.is_important,
-      flags: { isUrgent: false, isImportant: true }
-    },
-    {
-      key: 'urgent-not-important',
-      title: 'Urgent (Not Important)',
-      filter: t => t.is_urgent && !t.is_important,
-      flags: { isUrgent: true, isImportant: false }
-    },
-    {
-      key: 'not-urgent-not-important',
-      title: 'Neither',
-      filter: t => !t.is_urgent && !t.is_important,
-      flags: { isUrgent: false, isImportant: false }
-    }
+    { key: 'ui', title: 'Urgent & Important', filter: t => t.is_urgent && t.is_important, flags: { isUrgent: true, isImportant: true } },
+    { key: 'nui', title: 'Important, Not Urgent', filter: t => !t.is_urgent && t.is_important, flags: { isUrgent: false, isImportant: true } },
+    { key: 'uni', title: 'Urgent, Not Important', filter: t => t.is_urgent && !t.is_important, flags: { isUrgent: true, isImportant: false } },
+    { key: 'nuni', title: 'Neither Urgent Nor Important', filter: t => !t.is_urgent && !t.is_important, flags: { isUrgent: false, isImportant: false } }
   ];
 
   return (
-    <div className="eisenhower-matrix">
-      {quadrants.map(q => (
-        <div
-          key={q.key}
-          className="quadrant"
-          onDragOver={handleDragOver}
-          onDrop={e => handleDrop(e, q.flags.isUrgent, q.flags.isImportant)}
-        >
-          <h4>{q.title}</h4>
-          <div className="task-list">
-            {tasks.filter(q.filter).map(task => (
-              <div
-                key={task.id}
-                className="matrix-task"
-                draggable
-                onDragStart={e => handleDragStart(e, task.id)}
-              >
-                {task.title}
-              </div>
-            ))}
+    <>
+      <button className="btn btn-outline back-button" onClick={onBack}>&larr; Back to Tasks</button>
+      <div className="eisenhower-matrix">
+        {quadrants.map(q => (
+          <div
+            key={q.key}
+            className={`quadrant ${dragOverQuadrant === q.key ? 'is-over' : ''}`}
+            onDragOver={handleDragOver}
+            onDrop={e => handleDrop(e, q.flags.isUrgent, q.flags.isImportant)}
+            onDragEnter={e => handleDragEnter(e, q.key)}
+            onDragLeave={handleDragLeave}
+          >
+            <h4>{q.title}</h4>
+            <div className="quadrant-task-list">
+              {tasks.filter(q.filter).map(task => (
+                <div
+                  key={task.id}
+                  className="matrix-task"
+                  draggable
+                  onDragStart={e => handleDragStart(e, task.id)}
+                >
+                  {task.title}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }

@@ -1,32 +1,80 @@
+/* src/components/KanbanBoard.css */
+.back-button {
+  margin-bottom: 1.5rem;
+}
+
+/* Base style for the board (mobile-first) */
 .kanban-board {
   display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  overflow-x: auto;
+  flex-direction: column; /* Stacks columns vertically on mobile */
+  gap: 1.5rem;
+  align-items: stretch;
 }
 
 .kanban-column {
-  background: #f4f5f7;
-  border-radius: 8px;
-  padding: 0.5rem;
-  width: 240px;
-  min-height: 200px;
+  background: var(--background);
+  border-radius: var(--border-radius-lg);
+  padding: 1rem;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  transition: background-color 0.2s ease-in-out;
 }
 
+/* Visual feedback when dragging over a column */
 .kanban-column.drag-over {
-  background: #e1e3e6;
+  background: var(--primary-light);
+}
+
+.kanban-column h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.kanban-column-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 100px; /* Ensures drop zone exists when a column is empty */
+  flex-grow: 1;
 }
 
 .kanban-card {
-  background: #fff;
-  border-radius: 4px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: var(--surface);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: grab;
+  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.kanban-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .kanban-card.dragging {
-  background: #e0f7fa;
+  box-shadow: var(--shadow-lg);
+  transform: rotate(3deg); /* Fun dragging effect */
+}
+
+/* On tablet screens and wider, switch to a horizontal layout */
+@media (min-width: 768px) {
+  .kanban-board {
+    flex-direction: row; /* Lay out columns horizontally */
+    overflow-x: auto;    /* Allow horizontal scrolling */
+    padding-bottom: 1rem; /* Add space for scrollbar */
+  }
+
+  .kanban-column {
+    width: 320px;     /* Give columns a fixed width */
+    flex-shrink: 0;   /* Prevent columns from shrinking */
+  }
 }

@@ -1,79 +1,66 @@
-/* src/Responsive.css */
+/* Responsive.css */
 
-/* --- Default Desktop Styles --- */
-/* By default, hide the mobile-only elements on larger screens */
-.mobile-header, .bottom-nav, .floating-add-btn {
+/* =============================================================================
+   Top bar: always visible as a horizontal flex container
+   ============================================================================= */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+}
+
+/* bottom nav hidden by default */
+.bottom-nav {
   display: none;
 }
 
-
-/* --- Mobile & Tablet Styles (for screens 768px or smaller) --- */
-@media (max-width: 768px) {
-  /* --- Hide Desktop Elements --- */
-  /* This is the key part that fixes the clutter. */
-  .list-header, .controls {
-    display: none !important;
-  }
-
-  /* --- Show Mobile Elements --- */
-  .mobile-header, .bottom-nav, .floating-add-btn {
-    display: flex;
-  }
-
-  /* --- Global App Layout on Mobile --- */
-  .app {
-    width: 100%;
-    min-height: 100vh;
-    border-radius: 0;
-    padding: 0;
-    padding-top: 60px;    /* Space for the fixed mobile header */
-    padding-bottom: 60px; /* Space for the fixed bottom nav */
-    box-shadow: none;
-  }
-
-  /* --- Filter Bar --- */
-  .filters {
-    padding: 0.75rem;
+/* =============================================================================
+   Mobile tweaks (<= 640px)
+   – keep the top controls visible and horizontal
+   – show the bottom navigation bar
+   ============================================================================= */
+@media (max-width: 640px) {
+  /* Keep the top “controls” bar as a single horizontal row */
+  .controls {
+    display: flex !important;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    padding: 8px;
     overflow-x: auto;
+  }
+  .controls .btn {
+    flex: 1 1 auto;
     white-space: nowrap;
-    border-bottom: 1px solid var(--color-border, #e5e7eb);
+    padding: 8px 12px;
+    font-size: 14px;
   }
 
-  /* --- Task List --- */
-  .task-list-container {
-      padding: 0.75rem;
+  /* Show bottom-nav on mobile */
+  .bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
   }
-  .list-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+  .bottom-nav .nav-item {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: #888;        /* muted by default */
+    background: none;
+    border: none;
   }
-  .list-item .button-container {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  /* --- Kanban Board --- */
-  .kanban-board {
-    display: flex;
-    overflow-x: auto;
-    padding: 1rem;
-    gap: 1rem;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-  }
-  .kanban-column {
-    flex: 0 0 300px;
-    scroll-snap-align: start;
-  }
-
-  /* --- Modal --- */
-  .modal {
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
-    max-width: 100%;
-    max-height: 100%;
-    padding: 1.5rem;
+  .bottom-nav .nav-item.active {
+    color: #000;        /* highlight active */
+    font-weight: bold;
   }
 }

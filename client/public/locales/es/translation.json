@@ -1,0 +1,9 @@
+{
+  "settings": {
+    "title": "Configuración",
+    "general": "General",
+    "widgets": "Widgets",
+    "language": "Idioma"
+  },
+  "welcome_message": "Bienvenido de nuevo"
+}

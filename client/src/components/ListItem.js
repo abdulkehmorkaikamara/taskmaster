@@ -14,7 +14,8 @@ export default function ListItem({
   userEmail,
   onEdit,
   onStart,
-  onUpdateTask
+  onUpdateTask,
+  onDelete
 }) {
   const { t } = useTranslation();
   const [isCompleted, setIsCompleted] = useState(task.progress === 100);
@@ -25,7 +26,6 @@ export default function ListItem({
     setIsCompleted(task.progress === 100);
   }, [task.progress]);
 
-  // Date / Time parsing & formatting
   let displayDate = t('tasks.no_due_date');
   let displayTime = "";
   if (task.start_at) {
@@ -49,21 +49,10 @@ export default function ListItem({
     }
   }
 
-  const deleteItem = async () => {
-    // A full implementation would require an onDeleteTask prop from App.js for optimistic updates
-    // For now, we can just call the server and then reload.
-    try {
-        await fetch(`${process.env.REACT_APP_SERVERURL}/todos/${task.id}`, { method: "DELETE" });
-        window.location.reload();
-    } catch (err) {
-        alert("Failed to delete task.");
-    }
-  };
-
   const markAsCompleted = () => {
     if (isCompleted) return;
     onUpdateTask(task.id, { progress: 100, list_name: 'Done' });
-    new Audio(doneSound).play().catch(() => {}); // Restored doneSound usage
+    new Audio(doneSound).play().catch(() => {});
   };
 
   const toggleSubtask = (sub) => {
@@ -74,59 +63,70 @@ export default function ListItem({
   };
 
   return (
-    <li className="list-item">
-      <div className="info-container">
-        <TickIcon />
-        <p className="task-title">{task.title}</p>
-        <p className="task-meta">
-          {displayDate}
-          {displayTime && `, ${displayTime}`}
-        </p>
-        <ProgressBar progress={task.progress} />
-      </div>
+    // This is the main card container for a single task
+    <div className="list-item">
+      {/* This new wrapper holds the always-visible, horizontal content */}
+      <div className="list-item-row">
+        
+        {/* Group 1: The main task info, which will grow to fill space */}
+        <div className="task-info">
+          <TickIcon onClick={markAsCompleted} isCompleted={isCompleted} />
+          <div>
+            <p className="task-title">{task.title}</p>
+            <p className="task-meta">
+              {displayDate}
+              {displayTime && `, ${displayTime}`}
+            </p>
+          </div>
+        </div>
 
-      <div className="button-container">
-        <input type="checkbox" className="task-checkbox" checked={isCompleted} onChange={markAsCompleted} aria-label={t('tasks.mark_complete')} />
-        <button type="button" className="btn edit"  onClick={() => onEdit(task)}>{t('edit')}</button>
-        <button type="button" className="btn start" onClick={() => onStart(task)}>{t('start')}</button>
-        <button type="button" className="btn delete" onClick={deleteItem}>{t('delete')}</button>
-      </div>
+        {/* Group 2: The progress bar */}
+        <div className="progress-container">
+          <ProgressBar progress={task.progress} />
+        </div>
 
-      {task.subtasks?.length > 0 && (
-        <div className="subtasks-container">
-          <button type="button" className="btn toggle-subtasks" onClick={() => setShowSubtasks(v => !v)}>
-            {showSubtasks ? t('hide_checklist') : t('show_checklist')}
-          </button>
+        {/* Group 3: All action buttons with updated, consistent classes */}
+        <div className="button-container">
+          <button type="button" className="btn btn-secondary"  onClick={() => onEdit(task)}>{t('edit')}</button>
+          <button type="button" className="btn btn-secondary" onClick={() => onStart(task)}>{t('start')}</button>
+          <button type="button" className="btn btn-danger" onClick={onDelete}>{t('delete')}</button>
           
-          {/* Restored subtasks list which uses the toggleSubtask function */}
-          {showSubtasks && (
-            <div className="subtasks-list">
-              {task.subtasks.map(sub => (
-                <label key={sub.id} className="subtask-item">
-                  <input
-                    type="checkbox"
-                    checked={sub.completed}
-                    onChange={() => toggleSubtask(sub)}
-                  />
-                  <span className={sub.completed ? "completed" : ""}>
-                    {sub.title}
-                  </span>
-                </label>
-              ))}
-            </div>
+          {task.subtasks?.length > 0 && (
+            <button type="button" className="btn btn-outline" onClick={() => setShowSubtasks(v => !v)}>
+              {showSubtasks ? t('hide_checklist') : t('show_checklist')}
+            </button>
           )}
+
+          <button type="button" className="btn btn-outline" onClick={() => setShowDetails(v => !v)}>
+            {showDetails ? t('hide_details') : t('show_details')}
+          </button>
+        </div>
+      </div>
+
+      {/* Conditionally rendered content now appears cleanly below the main row */}
+      {showSubtasks && (
+        <div className="subtasks-list expanded-section">
+          {task.subtasks.map(sub => (
+            <label key={sub.id} className="subtask-item">
+              <input
+                type="checkbox"
+                checked={sub.completed}
+                onChange={() => toggleSubtask(sub)}
+              />
+              <span className={sub.completed ? "completed" : ""}>
+                {sub.title}
+              </span>
+            </label>
+          ))}
         </div>
       )}
 
-      <button type="button" className="btn details-toggle" onClick={() => setShowDetails(v => !v)}>
-        {showDetails ? t('hide_details') : t('show_details')}
-      </button>
       {showDetails && (
-        <div className="task-details">
+        <div className="task-details expanded-section">
           <ActivityLog taskId={task.id} />
           <CommentsSection taskId={task.id} userEmail={userEmail} />
         </div>
       )}
-    </li>
+    </div>
   );
 }

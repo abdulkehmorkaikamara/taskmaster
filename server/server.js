@@ -15,47 +15,35 @@ const fetch          = require('node-fetch');
 const crypto         = require('crypto');
 const stripe         = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const OpenAI         = require('openai');
-        
+
 // ── PROJECT IMPORTS ───────────────────────────────────────────────
 const pool             = require('./db');
 const emailController  = require('./controllers/emailController');
 const requireAuth      = require('./middleware/requireAuth');
 const requireListRole  = require('./middleware/requireListRole');
 const { inviteMember } = require('./controllers/listsController');
+const { updateUserProfile } = require("./controllers/userController");
 
 // ── OPENAI INITIALISATION ─────────────────────────────────────────
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// ── APP INITIALISATION ────────────────────────────────────────────
+const app = express();
 
 // ── CONSTANTS & CONFIG ────────────────────────────────────────────
 const PORT          = process.env.PORT || 8000;
 const FRONTEND_URL  = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-// ===================================================================
-// FINAL CORS CONFIGURATION
-// ===================================================================
 const whitelist = (process.env.CLIENT_ORIGIN || '').split(',');
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.error(`CORS Error: Request from origin ${origin} was blocked.`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: "http://localhost:3000",
   credentials: true,
 };
 
-// ── APP INITIALISATION ────────────────────────────────────────────
-const app = express();
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-/* -----------------------------------------------------------------
-   STRIPE WEBHOOK - This must come before express.json()
-   ----------------------------------------------------------------- */
+// Stripe webhook must come before express.json()
 app.post('/billing/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   let event;
   try {
@@ -80,18 +68,16 @@ app.post('/billing/webhook', express.raw({ type: 'application/json' }), async (r
   res.json({ received: true });
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ===================================================================
-// PROTECTED ROUTES (Using requireAuth middleware)
-// ===================================================================
 
-// --- USER SETTINGS ---
+// ── PROTECTED ROUTES ─────────────────────────────────────────────
+app.put("/users/profile", requireAuth, updateUserProfile);
+
 app.put('/users/settings', requireAuth, async (req, res) => {
   const { settings } = req.body;
-  if (!settings) {
-    return res.status(400).json({ error: 'Settings object is required.' });
-  }
+  if (!settings) return res.status(400).json({ error: 'Settings object is required.' });
   try {
     const { rows } = await pool.query(
       'UPDATE users SET settings = settings || $1 WHERE email = $2 RETURNING settings',
@@ -105,17 +91,16 @@ app.put('/users/settings', requireAuth, async (req, res) => {
 });
 
 app.get('/users/settings', requireAuth, async (req, res) => {
-    try {
-        const { rows } = await pool.query('SELECT settings FROM users WHERE email = $1', [req.user.email]);
-        if (rows.length === 0) return res.status(404).json({ error: "User not found" });
-        res.status(200).json(rows[0].settings || {});
-    } catch (err) {
-        console.error('❌ Get settings error:', err);
-        res.status(500).json({ error: 'Failed to get settings.' });
-    }
+  try {
+    const { rows } = await pool.query('SELECT settings FROM users WHERE email = $1', [req.user.email]);
+    if (rows.length === 0) return res.status(404).json({ error: "User not found" });
+    res.status(200).json(rows[0].settings || {});
+  } catch (err) {
+    console.error('❌ Get settings error:', err);
+    res.status(500).json({ error: 'Failed to get settings.' });
+  }
 });
 
-// --- BILLING ---
 app.post('/billing/checkout', requireAuth, async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.create({
@@ -133,23 +118,21 @@ app.post('/billing/checkout', requireAuth, async (req, res) => {
   }
 });
 
-// --- USER INFO ---
-app.get('/users/me', requireAuth, async (req, res) => {
+app.get("/users/me", requireAuth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT email, is_premium FROM users WHERE email = $1', [req.user.email]);
-    if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
-    res.json(rows[0]);
+    const userEmail = req.cookies.Email;
+    const user = await pool.query(`SELECT is_premium, name, avatar FROM users WHERE email = $1`, [userEmail]);
+    if (user.rows.length === 0) return res.status(404).json({ error: "User not found" });
+    const { is_premium, name, avatar } = user.rows[0];
+    res.status(200).json({ is_premium, name, avatar });
   } catch (err) {
-    console.error('❌ Fetch /users/me error:', err);
-    res.status(500).json({ error: 'Failed to fetch user.' });
+    console.error("Failed to fetch user info", err);
+    res.status(500).json({ error: "Failed to load user info" });
   }
 });
 
-// --- TODOS ---
 app.get("/todos/:userEmail", requireAuth, async (req, res) => {
-  if (req.params.userEmail !== req.user.email) {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+  if (req.params.userEmail !== req.user.email) return res.status(403).json({ error: "Forbidden" });
   try {
     const { rows } = await pool.query(`SELECT * FROM todos WHERE user_email = $1 ORDER BY start_at ASC NULLS LAST`, [req.user.email]);
     res.json(rows);
@@ -189,9 +172,7 @@ app.put("/todos/:id", requireAuth, async (req, res) => {
 app.delete('/todos/:id', requireAuth, async (req, res) => {
   try {
     const deleteQuery = await pool.query('DELETE FROM todos WHERE id=$1 AND user_email = $2', [req.params.id, req.user.email]);
-    if (deleteQuery.rowCount === 0) {
-        return res.status(404).json({ message: 'Todo not found or you do not have permission to delete it.' });
-    }
+    if (deleteQuery.rowCount === 0) return res.status(404).json({ message: 'Todo not found or you do not have permission to delete it.' });
     res.status(200).json({ message: 'Todo deleted successfully!' });
   } catch (err) {
     console.error('❌ Delete todo error:', err);
@@ -199,11 +180,7 @@ app.delete('/todos/:id', requireAuth, async (req, res) => {
   }
 });
 
-// ===================================================================
-// PUBLIC ROUTES
-// ===================================================================
-
-// --- AUTHENTICATION ---
+// ── PUBLIC ROUTES ─────────────────────────────────────────────
 app.post('/signup', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: "Email and password required." });
@@ -233,9 +210,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ===================================================================
-// CRON REMINDERS
-// ===================================================================
+// ── CRON REMINDERS ────────────────────────────────────────────
 cron.schedule('0 8 * * *', async () => {
   console.log('⏰ Daily overdue task check');
   try {

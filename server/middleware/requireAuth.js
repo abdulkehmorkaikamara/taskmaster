@@ -1,24 +1,36 @@
-// middleware/requireAuth.js
 const jwt = require('jsonwebtoken');
 
+/**
+ * Express middleware to protect routes using JWT.
+ * Supports token in Authorization header (Bearer) or HTTP-only cookie.
+ */
 const requireAuth = (req, res, next) => {
-  const { authorization } = req.headers;
+  let token;
 
-  if (!authorization) {
-    return res.status(401).json({ error: 'Authorization token required' });
+  // 1) Check `Authorization: Bearer <token>` header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  }
+  // 2) Fallback to HTTP-only cookie named AuthToken
+  else if (req.cookies && req.cookies.AuthToken) {
+    token = req.cookies.AuthToken;
   }
 
-  // The token is sent as 'Bearer <token>'
-  const token = authorization.split(' ')[1];
+  // 3) If still no token, reject
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication token required' });
+  }
 
   try {
+    // Verify & decode
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    // Attach the user's email to the request object for later use
-    req.user = { email: payload.email };
-    next(); // Move on to the next function in the chain
+    // Attach user info to request
+    req.user = payload; 
+    next();
   } catch (err) {
-    console.error('Token verification failed:', err);
-    res.status(401).json({ error: 'Request is not authorized' });
+    console.error('JWT verification failed:', err);
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
 

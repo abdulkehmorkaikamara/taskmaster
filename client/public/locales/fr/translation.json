@@ -1,0 +1,36 @@
+{
+  "login_title": "Veuillez vous connecter",
+  "create_account_title": "Créer un compte",
+  "reset_password_title": "Réinitialiser votre mot de passe",
+  "choose_new_password_title": "Choisissez un nouveau mot de passe",
+
+  "email_label": "Email",
+  "password_label": "Mot de passe",
+  "new_password_label": "Nouveau mot de passe",
+  "confirm_password_label": "Confirmez le mot de passe",
+
+  "remember_me": "Se souvenir de moi",
+  "forgot_password_link": "Mot de passe oublié ?",
+  "back_to_login_link": "Retour à la connexion",
+
+  "login_button": "Connexion",
+  "signup_button": "S'inscrire",
+  "send_reset_link_button": "Envoyer le lien de réinitialisation",
+  "reset_password_button": "Réinitialiser le mot de passe",
+
+  "no_account_prompt": "Pas encore de compte ?",
+  "already_registered_prompt": "Déjà inscrit ?",
+
+  "settings": {
+    "title": "Paramètres",
+    "general": "Général",
+    "widgets": "Widgets",
+    "language": "Langue",
+    "back": "Retour"
+  },
+  "welcome_message": "Bienvenue à nouveau",
+  "buttons": {
+    "add_new": "Ajouter",
+    "dashboard": "Tableau de bord"
+  }
+}

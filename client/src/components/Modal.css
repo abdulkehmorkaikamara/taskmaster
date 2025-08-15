@@ -1,247 +1,92 @@
-/* Modal.css - Refined and Modernized */
+/* src/components/Modal.css */
 
-/* * ===================================================================
- * CSS Variables for Theming
- * ===================================================================
- * Using variables makes it incredibly easy to keep your design
- * consistent and to implement features like dark mode later.
- */
-:root {
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  
-  /* Colors */
-  --color-primary: #3b82f6; /* A modern, friendly blue */
-  --color-primary-hover: #2563eb;
-  --color-success: #16a34a; /* A complementary green */
-  --color-success-hover: #15803d;
-  --color-text-primary: #1f2937; /* Dark gray for main text */
-  --color-text-secondary: #4b5563; /* Lighter gray for labels/secondary text */
-  --color-background: #ffffff;
-  --color-surface: #f9fafb; /* Light gray for subtle backgrounds */
-  --color-border: #d1d5db;
-  --color-focus-ring: rgba(59, 130, 246, 0.25);
-
-  /* Spacing & Radius */
-  --border-radius: 0.5rem; /* 8px */
-  --spacing-1: 0.25rem; /* 4px */
-  --spacing-2: 0.5rem;  /* 8px */
-  --spacing-3: 0.75rem; /* 12px */
-  --spacing-4: 1rem;    /* 16px */
-  --spacing-6: 1.5rem;  /* 24px */
-  --spacing-8: 2rem;    /* 32px */
-}
-
-/* ===================================================================
- * Base Modal Styles
- * =================================================================== */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(17, 24, 39, 0.6); /* Darker, more modern overlay */
-  backdrop-filter: blur(4px); /* Adds a nice "glass" effect */
+/* --- Modal Layout --- */
+.modal-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.close-button {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  color: var(--text-secondary);
+  border-radius: 50%;
+}
+.close-button:hover {
+  background: var(--background) !important;
+  color: var(--text-primary);
 }
 
-.modal {
-  position: relative;
-  background: var(--color-background);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-8);
-  width: 90%;
-  max-width: 480px; /* Slightly wider for more complex forms */
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: fadeIn 0.2s ease-out;
-  font-family: var(--font-sans);
+.modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
-
-.close-btn {
-  position: absolute;
-  top: var(--spacing-4);
-  right: var(--spacing-4);
-  border: none;
-  background: transparent;
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  transition: color 0.2s, transform 0.2s;
-}
-.close-btn:hover {
-  color: var(--color-text-primary);
-  transform: rotate(90deg);
-}
-
-.modal h2 {
-  margin-top: 0;
-  margin-bottom: var(--spacing-6);
-  font-size: 1.5rem;
+.form-group label {
   font-weight: 600;
-  color: var(--color-text-primary);
-  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-primary);
 }
 
-/* ===================================================================
- * Form Styling
- * =================================================================== */
-.form-group,
-.progress-group {
-  margin-bottom: var(--spacing-4);
+/* --- Subtasks --- */
+.subtasks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
-.form-group label,
-.progress-group label {
-  display: block;
-  margin-bottom: var(--spacing-2);
-  font-weight: 500;
-  font-size: 0.875rem; /* 14px */
-  color: var(--color-text-secondary);
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: var(--spacing-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  color: var(--color-text-primary);
-  background-color: var(--color-background);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.form-group input:focus,
-.form-group select:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
-}
-
-/* Range Slider */
-.progress-group input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  background: var(--color-surface);
-  border-radius: 3px;
-  outline: none;
-  padding: 0;
-}
-.progress-group input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  background: var(--color-primary);
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
-  transition: transform 0.2s ease;
-}
-.progress-group input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
-}
-.progress-group input[type="range"]::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  background: var(--color-primary);
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
-}
-
-/* ===================================================================
- * Subtask Styling (from Modal.js)
- * =================================================================== */
-.subtasks-group .subtask-row {
+.subtask-row {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
-  margin-bottom: var(--spacing-2);
+  gap: 0.5rem;
 }
-.subtasks-group .subtask-row input {
+.subtask-row input {
   flex-grow: 1;
 }
-.subtasks-group .subtask-row button {
-  background: transparent;
-  border: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-size: 1.25rem;
-  padding: var(--spacing-1);
-  line-height: 1;
-  border-radius: 50%;
-  transition: background-color 0.2s, color 0.2s;
+.subtask-row .btn-danger {
+  padding: 0.5rem; /* Make the icon-only button square */
 }
-.subtasks-group .subtask-row button:hover {
-  background-color: var(--color-surface);
-  color: var(--color-text-primary);
-}
-.btn.add-subtask {
-  background: transparent;
-  border: 1px dashed var(--color-border);
-  color: var(--color-text-secondary);
-  width: 100%;
-  margin-top: var(--spacing-2);
-  font-weight: 500;
-}
-.btn.add-subtask:hover {
-  background-color: var(--color-surface);
-  color: var(--color-text-primary);
-  border-color: var(--color-primary);
+.add-subtask {
+  align-self: flex-start; /* Align button to the left */
+  margin-top: 0.5rem;
 }
 
-/* ===================================================================
- * Button Group
- * =================================================================== */
-.button-group {
+/* --- Modal Actions --- */
+.modal-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-3);
-  margin-top: var(--spacing-6);
-  border-top: 1px solid var(--color-surface);
-  padding-top: var(--spacing-4);
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
 }
 
-.btn {
-  padding: var(--spacing-3) var(--spacing-4);
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+/* --- Styling for React-Select --- */
+/* This is a basic override to make the CreatableSelect component
+   match the app's theme. You can customize this further. */
+.css-b62m3t-container .css-13cymwt-control,
+.css-b62m3t-container .css-t3ipsp-control {
+  border-color: var(--border-color) !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
 }
-.btn:active {
-    transform: scale(0.98);
+.css-b62m3t-container .css-13cymwt-control:hover {
+  border-color: var(--primary) !important;
 }
-
-.btn.cancel {
-  background-color: var(--color-surface);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-}
-.btn.cancel:hover {
-  background-color: var(--color-border);
-  color: var(--color-text-primary);
-}
-
-.btn.save {
-  background-color: var(--color-success);
-  color: #fff;
-}
-.btn.save:hover {
-  background-color: var(--color-success-hover);
+.css-b62m3t-container .css-1p3m7a8-multiValue {
+  background-color: var(--primary-light) !important;
+  color: var(--primary) !important;
 }

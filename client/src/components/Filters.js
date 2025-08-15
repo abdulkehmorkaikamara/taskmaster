@@ -4,7 +4,7 @@ import React from 'react';
 import Select from 'react-select';
 import './Filters.css';
 
-export default function Filters({ filters, setFilters, listOptions, tasks }) {
+export default function Filters({ filters, setFilters, listOptions, tasks = [] }) {
   // Handler for the built-in form controls
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
@@ -14,34 +14,34 @@ export default function Filters({ filters, setFilters, listOptions, tasks }) {
     }));
   };
 
-  // Build tag options from all tasks
+  // Build tag options from all tasks (safe if tasks undefined)
   const allTags = Array.from(
-    new Set(tasks.flatMap(t => t.tags || []))
+    new Set(
+      tasks.flatMap(t => t.tags || [])
+    )
   ).map(tag => ({ label: tag, value: tag }));
 
   return (
-    <div className="filters">
-      {/* List selector */}
-      <label htmlFor="list-filter">
-        List:
+    <div className="filters-container">
+      
+      <div className="filter-group">
+        <label htmlFor="list-filter">List</label>
         <select
           id="list-filter"
           name="list_name"
           value={filters.list_name}
           onChange={handleChange}
         >
-          <option value="All">All</option>
           {listOptions.map(opt => (
             <option key={opt} value={opt}>
               {opt}
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
-      {/* Status selector */}
-      <label htmlFor="status-filter">
-        Status:
+      <div className="filter-group">
+        <label htmlFor="status-filter">Status</label>
         <select
           id="status-filter"
           name="status"
@@ -52,39 +52,42 @@ export default function Filters({ filters, setFilters, listOptions, tasks }) {
           <option value="Completed">Completed</option>
           <option value="Pending">Pending</option>
         </select>
-      </label>
+      </div>
 
-      {/* Urgent / Important checkboxes */}
-      <label>
-        <input
-          type="checkbox"
-          name="is_urgent"
-          checked={filters.is_urgent}
-          onChange={handleChange}
-        />{' '}
-        Urgent
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="is_important"
-          checked={filters.is_important}
-          onChange={handleChange}
-        />{' '}
-        Important
-      </label>
+      <div className="filter-group checkbox-container">
+        <label>
+          <input
+            type="checkbox"
+            name="is_urgent"
+            checked={filters.is_urgent}
+            onChange={handleChange}
+          />
+          Urgent
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            name="is_important"
+            checked={filters.is_important}
+            onChange={handleChange}
+          />
+          Important
+        </label>
+      </div>
 
-      {/* Tag-cloud multi-select */}
-      <div className="tag-filter-wrapper">
+      <div className="filter-group tag-filter">
+        <label>Tags</label>
         <Select
           isMulti
           options={allTags}
           value={filters.tags || []}
           onChange={sel => setFilters(f => ({ ...f, tags: sel || [] }))}
           placeholder="Filter by tags…"
-          className="tag-filter"
+          className="tag-select-container"
+          classNamePrefix="tag-select"
         />
       </div>
+
     </div>
   );
 }

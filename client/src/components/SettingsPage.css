@@ -1,323 +1,190 @@
-/* SettingsPage.css - Refined and Modernized */
+/* src/components/SettingsPage.css */
 
-/* * ===================================================================
- * CSS Variables for Theming
- * ===================================================================
- * Reusing the same variables from the Modal ensures a consistent
- * design system across your entire application.
- */
-:root {
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  
-  /* Colors */
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-danger: #ef4444;
-  --color-danger-hover: #dc2626;
-  --color-warning: #f59e0b;
-  --color-text-primary: #1f2937;
-  --color-text-secondary: #4b5563;
-  --color-text-subtle: #9ca3af;
-  --color-background: #f9fafb; /* Use a light gray for the page background */
-  --color-surface: #ffffff;    /* Use white for cards/sections */
-  --color-border: #e5e7eb;
-  --color-focus-ring: rgba(59, 130, 246, 0.25);
-
-  /* Spacing & Radius */
-  --border-radius: 0.5rem; /* 8px */
-  --spacing-1: 0.25rem; /* 4px */
-  --spacing-2: 0.5rem;  /* 8px */
-  --spacing-3: 0.75rem; /* 12px */
-  --spacing-4: 1rem;    /* 16px */
-  --spacing-6: 1.5rem;  /* 24px */
-  --spacing-8: 2rem;    /* 32px */
-}
-
-/* ===================================================================
- * Main Page Layout
- * =================================================================== */
 .settings-page {
-  max-width: 700px;
-  margin: var(--spacing-8) auto;
-  padding: var(--spacing-4);
-  font-family: var(--font-sans);
-  color: var(--color-text-primary);
-  background-color: var(--color-background);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-/* ===================================================================
- * Profile Section
- * =================================================================== */
-.settings-profile {
+.settings-group {
+  background: var(--surface);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  overflow: hidden; /* Ensures child borders don't poke out */
+}
+
+.settings-group-title {
+  padding: 1rem 1.5rem;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--background);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* --- Profile Card --- */
+.profile-card {
   display: flex;
   align-items: center;
-  gap: var(--spacing-6);
-  padding: var(--spacing-6);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  margin-bottom: var(--spacing-6);
+  gap: 1rem;
+  padding: 1.5rem;
 }
-
 .avatar-container {
   position: relative;
-  width: 80px;
-  height: 80px;
-  flex-shrink: 0; /* Prevent avatar from shrinking */
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
 }
-
 .settings-avatar {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--color-border);
-  background-color: var(--color-background); /* Placeholder color */
 }
-
 .upload-overlay {
   position: absolute;
-  bottom: 0; right: 0;
-  background: rgba(0,0,0,0.6);
+  bottom: 0;
+  right: 0;
+  background: var(--primary);
   color: white;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  width: 28px; height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 2px solid var(--color-surface);
-  transition: background-color 0.2s;
-}
-.upload-overlay:hover {
-  background: var(--color-primary);
+  border: 2px solid var(--surface);
 }
 .avatar-input {
   display: none;
 }
-
-.settings-userinfo {
-  flex-grow: 1;
-}
-
 .profile-name-input {
-  width: 100%;
-  padding: var(--spacing-2) var(--spacing-3);
-  font-size: 1.125rem;
-  font-weight: 600;
-  border: 1px solid transparent;
-  border-radius: var(--border-radius);
-  transition: border-color 0.2s, background-color 0.2s;
-}
-.profile-name-input:hover {
-  border-color: var(--color-border);
+  font-size: 1.5rem;
+  font-weight: bold;
+  border: none;
+  background: transparent;
+  padding: 0.25rem;
+  border-radius: 8px;
 }
 .profile-name-input:focus {
-  border-color: var(--color-primary);
-  background-color: var(--color-surface);
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: none;
+  background: var(--background);
 }
-
-.settings-badges {
+.gamification-details {
   display: flex;
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-2);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
-.settings-badges .badge {
-  padding: var(--spacing-1) var(--spacing-3);
-  border: none;
-  border-radius: 999px; /* Pill shape */
-  font-size: 0.875rem;
-  font-weight: 500;
-  background: var(--color-background);
-  color: var(--color-text-secondary);
-  cursor: default;
-}
-.settings-badges .level {
-  background: var(--color-warning);
-  color: var(--color-text-primary);
-}
-
-/* ===================================================================
- * Upgrade Banner
- * =================================================================== */
-.settings-upgrade {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-4);
-  background: linear-gradient(to right, #e0f2fe, #dbeafe); /* Light blue gradient */
-  padding: var(--spacing-4);
-  border-radius: var(--border-radius);
-  margin-bottom: var(--spacing-6);
-  border: 1px solid #bae6fd;
-}
-
-.settings-upgrade .icon {
-  color: #f59e0b; /* Golden yellow */
-  font-size: 1.5rem;
-}
-
-.upgrade-text {
-  flex: 1;
-  font-weight: 500;
-}
-
-.btn-upgrade {
-  background: var(--color-primary);
-  color: white;
-  padding: var(--spacing-2) var(--spacing-4);
-  border: none;
-  border-radius: var(--border-radius);
+.badge {
+  font-size: 0.75rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--text-secondary);
 }
-.btn-upgrade:hover {
-  background: var(--color-primary-hover);
-}
-.btn-upgrade:active {
-  transform: scale(0.98);
-}
-
-/* ===================================================================
- * Settings Groups & Items
- * =================================================================== */
-.settings-group {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  margin-bottom: var(--spacing-4);
-  padding: var(--spacing-2) var(--spacing-4);
+.badge.level {
+  background: #ffb300;
+  color: var(--text-primary);
 }
 
-.settings-group-title {
-  padding: var(--spacing-4) 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
 
+/* --- Settings Items --- */
 .settings-item {
-  width: 100%;
   display: flex;
   align-items: center;
-  background: transparent;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  width: 100%;
+  background: none;
   border: none;
-  padding: var(--spacing-3) 0;
-  font-size: 1rem;
-  cursor: pointer;
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-primary);
   text-align: left;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  cursor: pointer;
 }
-.settings-group .settings-item:first-of-type {
-    border-top: none;
+.settings-item:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
 }
 .settings-item:hover {
-  color: var(--color-primary);
+  background: var(--background);
 }
 .settings-item .icon {
-  margin-right: var(--spacing-3);
-  color: var(--color-text-secondary);
-  font-size: 1.25rem;
-  transition: color 0.2s;
+  color: var(--text-secondary);
 }
-.settings-item:hover .icon {
-  color: var(--color-primary);
+.settings-item .version, .settings-item .arrow-right {
+  margin-left: auto;
+  color: var(--text-secondary);
 }
 
-.checkbox-group {
+/* --- Upgrade Banner --- */
+.upgrade-banner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--primary-light);
 }
-.checkbox-group label {
-  margin-left: var(--spacing-3);
+.upgrade-banner .icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.upgrade-text {
   flex-grow: 1;
 }
-.checkbox-group input[type="checkbox"] {
-    width: 1.25rem;
-    height: 1.25rem;
-    accent-color: var(--color-primary);
+.upgrade-text strong, .upgrade-text small {
+  display: block;
 }
-
-
-/* ===================================================================
- * Sign Out Button
- * =================================================================== */
-.btn-signout {
-  margin-top: var(--spacing-6);
-  width: 100%;
-  padding: var(--spacing-3);
-  font-size: 1rem;
-  font-weight: 600;
-  background: var(--color-danger);
-  color: white;
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+.upgrade-text strong {
+  color: var(--text-primary);
 }
-.btn-signout:hover {
-  background: var(--color-danger-hover);
-}
-.btn-signout:active {
-  transform: scale(0.99);
-}
-
-.version {
-  text-align: center;
-  margin-top: var(--spacing-4);
-  color: var(--color-text-subtle);
+.upgrade-text small {
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
-/* Add this to your SettingsPage.css */
-
-.badge-container {
+/* --- Toggle Switch --- */
+.switch {
   position: relative;
   display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin-left: auto;
 }
-
-.badge-tooltip {
-  visibility: hidden;
-  width: 220px;
-  background-color: #333;
-  color: #fff;
-  text-align: left;
-  border-radius: 6px;
-  padding: 10px;
+.switch input { display: none; }
+.slider {
   position: absolute;
-  z-index: 1;
-  bottom: 125%; /* Position above the button */
-  left: 50%;
-  margin-left: -110px; /* Use half of the width to center */
-  opacity: 0;
-  transition: opacity 0.3s;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  border-radius: 34px;
+  transition: .4s;
 }
-
-.badge-tooltip::after {
+.slider:before {
+  position: absolute;
   content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #333 transparent transparent transparent;
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: var(--primary);
+}
+input:checked + .slider:before {
+  transform: translateX(20px);
 }
 
-.badge-container:hover .badge-tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-.badge-tooltip ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.badge-tooltip li {
-    margin-bottom: 5px;
+/* --- Sign Out Button --- */
+.sign-out-button {
+  width: 100%;
+  margin-top: 1rem;
 }

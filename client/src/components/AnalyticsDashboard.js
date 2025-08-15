@@ -1,7 +1,7 @@
 // src/components/AnalyticsDashboard.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate }             from 'react-router-dom';
-import { useCookies }              from 'react-cookie';
+import { useNavigate } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
 import {
   ResponsiveContainer,
   LineChart, Line,
@@ -11,56 +11,71 @@ import {
 import './AnalyticsDashboard.css';
 
 export default function AnalyticsDashboard({ isPremium }) {
-  const navigate    = useNavigate();
-  const [cookies]   = useCookies(['Email','AuthToken']);
-  const userEmail   = cookies.Email;
-  const [error, setError]           = useState(null);
-  const [data, setData]             = useState([]);
-  const [avgTime, setAvgTime]       = useState(0);
-  const [streaks, setStreaks]       = useState({ currentStreak: 0, longestStreak: 0 });
+  const navigate = useNavigate();
+  const [cookies] = useCookies(['Email', 'AuthToken']);
+  const userEmail = cookies.Email;
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState([]);
+  const [avgTime, setAvgTime] = useState(0);
+  const [streaks, setStreaks] = useState({ currentStreak: 0, longestStreak: 0 });
 
   useEffect(() => {
-    if (!isPremium) {
-      setError('Upgrade to Premium to unlock Advanced Analytics.');
-      return;
-    }
-    setError(null);
+    const fetchAnalytics = async () => {
+      if (!isPremium) {
+        setError('Upgrade to Premium to unlock Advanced Analytics.');
+        setIsLoading(false);
+        return;
+      }
 
-    // 1️⃣ Productivity series + avg time
-    fetch(
-      `${process.env.REACT_APP_SERVERURL}/analytics/productivity?userEmail=${encodeURIComponent(userEmail)}`,
-      { headers: { Authorization: `Bearer ${cookies.AuthToken}` } }
-    )
-      .then(r => r.json())
-      .then(json => {
-        setData(json.series);
-        setAvgTime(json.avgCompletionMinutes);
-      })
-      .catch(err => {
-        console.error(err);
-        setError('Failed to load analytics data.');
-      });
+      setIsLoading(true);
+      setError(null);
+      try {
+        const [productivityRes, streaksRes] = await Promise.all([
+          fetch(
+            `${process.env.REACT_APP_SERVERURL}/analytics/productivity?userEmail=${encodeURIComponent(userEmail)}`,
+            { headers: { Authorization: `Bearer ${cookies.AuthToken}` } }
+          ),
+          fetch(
+            `${process.env.REACT_APP_SERVERURL}/analytics/streaks?userEmail=${encodeURIComponent(userEmail)}`,
+            { headers: { Authorization: `Bearer ${cookies.AuthToken}` } }
+          )
+        ]);
 
-    // 2️⃣ Streaks
-    fetch(
-      `${process.env.REACT_APP_SERVERURL}/analytics/streaks?userEmail=${encodeURIComponent(userEmail)}`,
-      { headers: { Authorization: `Bearer ${cookies.AuthToken}` } }
-    )
-      .then(r => r.json())
-      .then(setStreaks)
-      .catch(err => {
+        if (!productivityRes.ok || !streaksRes.ok) {
+          throw new Error('Failed to load analytics data.');
+        }
+
+        const productivityData = await productivityRes.json();
+        const streaksData = await streaksRes.json();
+
+        setData(productivityData.series || []);
+        setAvgTime(productivityData.avgCompletionMinutes || 0);
+        setStreaks(streaksData || { currentStreak: 0, longestStreak: 0 });
+
+      } catch (err) {
         console.error(err);
-        // we can still show the rest
-      });
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
   }, [isPremium, userEmail, cookies.AuthToken]);
+
+  if (isLoading) {
+    return <div className="loading-state">Loading analytics...</div>;
+  }
 
   if (error) {
     return (
       <div className="analytics-upgrade-banner">
+        <h3>✧˚ Advanced Analytics</h3>
         <p>{error}</p>
         <button
-          className="btn-upgrade"
-          onClick={() => navigate('/settings/integration')}
+          className="btn btn-primary"
+          onClick={() => navigate('/profile')} // A better target would be a profile or billing page
         >
           Upgrade Now
         </button>
@@ -70,60 +85,36 @@ export default function AnalyticsDashboard({ isPremium }) {
 
   return (
     <div className="analytics-dashboard">
-      <h2>Productivity Overview</h2>
-
       <div className="analytics-grid">
-        {/* Completed vs. Pending */}
         <div className="chart-container">
           <h3>Completed vs. Pending Tasks</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>
-              <XAxis dataKey="day" />
-              <YAxis />
-              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+              <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
               <Tooltip />
               <Legend verticalAlign="top" />
-              <Line type="monotone" dataKey="completed" stroke="var(--success)" name="Completed" />
-              <Line type="monotone" dataKey="pending"   stroke="var(--danger)"  name="Pending"   />
+              <Line type="monotone" dataKey="completed" stroke="var(--primary)" name="Completed" strokeWidth={2} />
+              <Line type="monotone" dataKey="pending" stroke="var(--danger)" name="Pending" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Stats cards */}
         <div className="stats-column">
           <div className="stat-card">
-            <h4>Avg Completion Time</h4>
-            <p>{avgTime.toFixed(1)} min</p>
+            <h4>Avg. Completion Time</h4>
+            <p className="stat-value">{avgTime.toFixed(1)} min</p>
           </div>
           <div className="stat-card">
             <h4>Current Streak</h4>
-            <p>{streaks.currentStreak} days 🚀</p>
+            <p className="stat-value">{streaks.currentStreak} days 🚀</p>
           </div>
           <div className="stat-card">
             <h4>Longest Streak</h4>
-            <p>{streaks.longestStreak} days 🏆</p>
+            <p className="stat-value">{streaks.longestStreak} days 🏆</p>
           </div>
         </div>
-      </div>
-
-      {/* Tasks by weekday */}
-      <div className="chart-small">
-        <h3>Tasks Completed by Weekday</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart
-            data={data.map(d => ({
-              day: new Date(d.day).toLocaleDateString(undefined, { weekday: 'short' }),
-              completed: d.completed
-            }))}
-            barCategoryGap="20%"
-          >
-            <XAxis dataKey="day" />
-            <YAxis />
-            <CartesianGrid strokeDasharray="3 3" />
-            <Tooltip />
-            <Bar dataKey="completed" fill="var(--accent)" name="Completed" />
-          </BarChart>
-        </ResponsiveContainer>
       </div>
     </div>
   );

@@ -3,12 +3,16 @@ import React, { Suspense } from 'react'; // 1. Import Suspense
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { CookiesProvider } from 'react-cookie';
+//import { IonReactRouter } from '@ionic/react-router';
+//import { Route, Redirect } from 'react-router-dom';
+
 
 import App from './App';
 import { ThemeProvider } from './ThemeContext';
 import { PremiumProvider } from "./context/PremiumContext";
 import './i18n'; // Your i18n configuration
 import "./index.css";
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -20,7 +24,9 @@ root.render(
         <CookiesProvider>
           <ThemeProvider>
             <PremiumProvider>
-              <App />
+              
+                <App />
+              
             </PremiumProvider>
           </ThemeProvider>
         </CookiesProvider>

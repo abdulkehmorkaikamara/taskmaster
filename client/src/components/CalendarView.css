@@ -1,48 +1,38 @@
+/* src/components/CalendarView.css */
+
 .calendar-view-wrapper {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto 2rem;
-  padding: 1rem;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .calendar-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.calendar-nav {
-  background: #eee;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1.2rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.calendar-nav:hover {
-  background: #ddd;
+  align-items: center;
+  margin-bottom: 1.5rem;
 }
 
 .calendar-month {
   font-size: 1.25rem;
-  font-weight: 500;
-}
-
-.calendar-day-names {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  margin-bottom: 0.5rem;
-}
-
-.calendar-day-name {
-  text-align: center;
   font-weight: 600;
-  color: #555;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.calendar-nav {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.5rem !important;
+  color: var(--text-secondary);
+}
+.calendar-nav:hover {
+  background: var(--background) !important;
+  color: var(--text-primary);
 }
 
 .calendar-grid {
@@ -51,45 +41,50 @@
   gap: 0.5rem;
 }
 
-/* empty slots before month starts */
-.day.empty {
-  background: transparent;
-}
-
-/* each day cell */
-.day {
-  position: relative;
-  padding: 0.5rem;
-  border-radius: 6px;
-  text-align: center;
-  background: #f7f9fc;
-  transition: background 0.2s;
-  cursor: pointer;
-}
-.day:hover {
-  background: #e8eef6;
-}
-
-/* number in top‐left */
-.day-number {
-  display: block;
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
-  color: #333;
-}
-
-/* highlight today */
-.day.today {
-  border: 2px solid #2196f3;
-}
-
-/* badge for tasks */
-.task-count {
-  display: inline-block;
-  margin-top: 0.25rem;
-  padding: 0.15rem 0.4rem;
+.calendar-day-name {
   font-size: 0.75rem;
-  background: #4caf50;
-  color: #fff;
-  border-radius: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  border-radius: 50%; /* Make the day cells circular */
+  transition: background-color 0.2s ease-in-out;
+  position: relative;
+}
+
+.day-number {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.day.today .day-number {
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day.empty {
+  visibility: hidden;
+}
+
+.task-indicator {
+  position: absolute;
+  bottom: 8px;
+  width: 5px;
+  height: 5px;
+  background-color: var(--primary);
+  border-radius: 50%;
 }

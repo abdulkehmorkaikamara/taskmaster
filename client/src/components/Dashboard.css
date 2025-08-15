@@ -1,26 +1,67 @@
 /* src/components/Dashboard.css */
 
-.charts-container {
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile-first: one column */
+  gap: 1.5rem;
+}
+
+.dashboard-card {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: space-around;
+  flex-direction: column;
 }
-.chart {
-  flex: 1 1 300px;
-  background: #fff;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-.chart h4 {
-  margin: 0 0 12px;
-  font-size: 1.1rem;
-  color: #2d2d2d;
-}
-.upgrade-hint {
+
+.dashboard-card h4 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
   text-align: center;
-  font-style: italic;
-  color: #666;
-  padding: 24px;
+}
+
+.back-button {
+  margin-bottom: 1rem;
+  width: fit-content; /* Make button only as wide as its content */
+}
+
+/* --- Upgrade Hint Card --- */
+.upgrade-hint {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+}
+.upgrade-hint .icon-premium {
+  color: var(--primary);
+}
+.upgrade-hint p {
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 250px;
+}
+
+/* --- Recharts Customization --- */
+/* This makes the labels inside the Pie chart more readable */
+.recharts-pie-label-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  fill: white;
+}
+
+/* --- Responsive Layout for Desktop --- */
+@media (min-width: 768px) {
+  .dashboard-container {
+    /* On tablet and wider, use two columns */
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .back-button {
+    /* Place the back button in the first grid cell */
+    grid-column: 1 / -1; /* Span all columns */
+    margin-bottom: 0;
+  }
 }

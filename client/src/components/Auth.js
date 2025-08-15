@@ -3,12 +3,20 @@ import React, { useState } from "react";
 import { useCookies } from "react-cookie";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import ForgotPassword from "./ForgotPassword";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 import "./Auth.css";
 
 export default function Auth() {
+  
   const [, setCookie] = useCookies(["Email", "AuthToken"]);
-  const [isLogIn, setIsLogin]                 = useState(true);
+  const location = useLocation();
+  const initialMode = location.pathname === "/login";
+  const [isLogIn, setIsLogin] = useState(initialMode);
+  const navigate = useNavigate();
+
   const [email, setEmail]                     = useState("");
   const [password, setPassword]               = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -47,7 +55,9 @@ export default function Auth() {
       } else {
         setCookie("Email",     data.email, { path: "/" });
         setCookie("AuthToken", data.token, { path: "/" });
-        window.location.reload();
+        navigate("/");
+        
+
       }
     } catch {
       setError("Network error — please try again.");

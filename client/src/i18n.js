@@ -9,12 +9,18 @@ i18n
   .use(LanguageDetector) // detects user language
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
-    fallbackLng: 'en', // use English if the detected language is not available
-    debug: true, // set to false in production
+    // This option will use English if the detected language is not available.
+    fallbackLng: 'en', 
+
+    // Set to false for production
+    debug: true, 
+
     interpolation: {
-      escapeValue: false, // react already safes from xss
+      escapeValue: false, // React already protects from xss
     },
+
     backend: {
+      // Path to your translation files
       loadPath: '/locales/{{lng}}/translation.json',
     },
   });

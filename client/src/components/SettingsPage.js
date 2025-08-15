@@ -1,211 +1,161 @@
 // src/components/SettingsPage.js
+
 import React, { useState, useEffect, useContext } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import {
-  Crown, Grid, Brush, Music, Clock, LayoutGrid, Settings as Cog,
-  Share2, MessageSquare, User, Info
+  Crown, Grid, Brush, Music, Settings as Cog,
+  Share2, MessageSquare, User, Info, LogOut, ArrowRight, Volume2, Globe2, Mic
 } from "lucide-react";
-import ThemePicker from "../components/ThemePicker";
 import { PremiumContext } from "../context/PremiumContext";
+import { toast } from 'react-toastify';
 import "./SettingsPage.css";
 
-const inboundEmailAddress = process.env.REACT_APP_INBOUND_EMAIL;
-
 export default function SettingsPage({
-  filters, setFilters, listOptions, isDarkMode, setIsDarkMode,
+  isDarkMode, setIsDarkMode,
+  onBack,
+  userName, setUserName,
+  userAvatar, setUserAvatar,
+  // Props for voice settings from App.js
+  voiceSettings, 
+  setVoiceSettings,
+  availableVoices
 }) {
   const { isPremium, upgradeToPremium } = useContext(PremiumContext);
-  const [cookies, , removeCookie] = useCookies(["Email", "AuthToken", "UserName", "UserAvatar"]);
+  const [cookies, , removeCookie] = useCookies(["Email", "AuthToken"]);
   const navigate = useNavigate();
 
-  // Profile state
-  const [profileName, setProfileName] = useState(cookies.UserName || "");
-  const [avatarUrl, setAvatarUrl] = useState(cookies.UserAvatar || "/default-avatar.png");
-  
-  // Gamification state
+  // State for data fetched within this component
   const [level, setLevel] = useState(1);
   const [badges, setBadges] = useState([]);
 
-  // Calendar state
-  const [calendarConnected, setCalendarConnected] = useState(false);
-  const [calendarEmail, setCalendarEmail] = useState("");
-
-  // Fetch Gamification Data
   useEffect(() => {
-    if (!cookies.AuthToken) return;
-    fetch(`${process.env.REACT_APP_SERVERURL}/gamification/status?userEmail=${cookies.Email}`, {
-        headers: { Authorization: `Bearer ${cookies.AuthToken}` },
-    })
-    .then(res => res.json())
-    .then(data => {
+    const fetchGamificationData = async () => {
+      if (!cookies.AuthToken) return;
+      try {
+        const res = await fetch(`${process.env.REACT_APP_SERVERURL}/gamification/status?userEmail=${cookies.Email}`, {
+          headers: { Authorization: `Bearer ${cookies.AuthToken}` },
+        });
+        if (!res.ok) throw new Error('Failed to fetch gamification status');
+        const data = await res.json();
         if (data) {
-            setLevel(data.level || 1);
-            setBadges(data.badges || []);
+          setLevel(data.level || 1);
+          setBadges(data.badges || []);
         }
-    })
-    .catch(err => console.error("Failed to fetch gamification status:", err));
+      } catch (err) {
+        console.error("Failed to fetch gamification status:", err);
+      }
+    };
+    fetchGamificationData();
   }, [cookies.AuthToken, cookies.Email]);
 
-  // Fetch Calendar Status
-  useEffect(() => {
-    if (!isPremium || !cookies.AuthToken) return;
-    fetch(`${process.env.REACT_APP_SERVERURL}/auth/calendar/status`, {
-      headers: { Authorization: `Bearer ${cookies.AuthToken}` },
-    })
-      .then((r) => r.json())
-      .then(({ connected, email }) => {
-        setCalendarConnected(connected);
-        setCalendarEmail(email || "");
-      })
-      .catch(() => {});
-  }, [cookies.AuthToken, isPremium]);
-
-  // Helper functions
-  const handleNameBlur = () => {
-    document.cookie = `UserName=${encodeURIComponent(profileName)};path=/`;
+  const handleNameBlur = async () => {
+    try {
+      const res = await fetch(`${process.env.REACT_APP_SERVERURL}/users/profile`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${cookies.AuthToken}`,
+        },
+        body: JSON.stringify({ name: userName }),
+      });
+      if (!res.ok) throw new Error("Failed to save name");
+      document.cookie = `UserName=${encodeURIComponent(userName)}; path=/`;
+      toast.success("Profile name updated!");
+    } catch (err) {
+      console.error("❌ Name update error:", err);
+      toast.error("Could not update profile name.");
+    }
   };
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const dataUrl = reader.result;
-      setAvatarUrl(dataUrl);
-      document.cookie = `UserAvatar=${encodeURIComponent(dataUrl)};path=/`;
+      try {
+        const res = await fetch(`${process.env.REACT_APP_SERVERURL}/users/profile`, {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${cookies.AuthToken}`,
+          },
+          body: JSON.stringify({ avatar: dataUrl }),
+        });
+        if (!res.ok) throw new Error("Failed to save avatar");
+        setUserAvatar(dataUrl);
+        document.cookie = `UserAvatar=${encodeURIComponent(dataUrl)}; path=/`;
+        toast.success("Avatar updated!");
+      } catch (err) {
+        console.error("❌ Avatar update error:", err);
+        toast.error("Could not update avatar.");
+      }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleConnectCalendar = () =>
-    (window.location.href = `${process.env.REACT_APP_SERVERURL}/integrations/google/connect`);
-
-  const handleDisconnectCalendar = () => {
-    fetch(`${process.env.REACT_APP_SERVERURL}/auth/calendar/disconnect`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${cookies.AuthToken}` },
-    }).then((r) => {
-      if (r.ok) {
-        setCalendarConnected(false);
-        setCalendarEmail("");
-      }
-    });
+  const handleVoiceSettingChange = (e) => {
+    const { name, value } = e.target;
+    setVoiceSettings(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleListChange = (e) => setFilters((f) => ({ ...f, list_name: e.target.value }));
-  const handleStatusChange = (e) => setFilters((f) => ({ ...f, status: e.target.value }));
-  const handleToggle = (key) => setFilters((f) => ({ ...f, [key]: !f[key] }));
+  const handleVoiceToggle = (key) => {
+    setVoiceSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const go = (p) => navigate(p);
-  const handleTabBar = () => go("/settings/tab-bar");
-  const handleSounds = () => go("/settings/notifications");
-  const handleDateTime = () => go("/settings/date-time");
-  const handleWidgets = () => go("/settings/widgets");
-  const handleGeneral = () => go("/settings/general");
-  const handleImport = () => go("/settings/integration");
-  const handleHelp = () => go("/help");
-  const handleFollow = () => window.open("https://twitter.com/yourhandle", "_blank");
-  const handleAbout = () => go("/about");
 
   const signOut = () => {
     ["Email", "AuthToken", "UserName", "UserAvatar"].forEach((c) => removeCookie(c, { path: "/" }));
     navigate("/login");
   };
+  
+  const uniqueLanguages = [...new Set(availableVoices.map(v => v.lang))];
 
   return (
     <div className="settings-page">
-      <div className="settings-profile">
+      <button className="btn btn-outline back-button" onClick={onBack}>&larr; Back to Tasks</button>
+
+      {/* --- Profile Section --- */}
+      <div className="settings-group profile-card">
         <div className="avatar-container">
-          <img src={avatarUrl} alt="avatar" className="settings-avatar" />
+          <img src={userAvatar || "/default-avatar.png"} alt="avatar" className="settings-avatar" />
           <label htmlFor="avatarUpload" className="upload-overlay">✎</label>
           <input id="avatarUpload" type="file" accept="image/*" onChange={handleAvatarChange} className="avatar-input" />
         </div>
-        <div className="settings-userinfo">
+        <div className="user-details">
           <input
             className="profile-name-input"
-            value={profileName}
-            onChange={(e) => setProfileName(e.target.value)}
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
             onBlur={handleNameBlur}
             placeholder="Enter your name"
           />
-          <div className="settings-badges">
-            <button className="badge level">Lv.{level}</button>
-            <div className="badge-container">
-              <button className="badge">{badges.length} Badges</button>
-              <div className="badge-tooltip">
-                {badges.length > 0 ? (
-                  <ul>{badges.map(b => <li key={b.name}><strong>{b.name}:</strong> {b.description}</li>)}</ul>
-                ) : (<p>Complete tasks to earn badges!</p>)}
-              </div>
-            </div>
+          <div className="gamification-details">
+            <span className="badge level">Lv.{level}</span>
+            <span className="badge">{badges.length} Badges</span>
           </div>
         </div>
       </div>
 
+      {/* --- Upgrade Banner --- */}
       {!isPremium && (
-        <div className="settings-upgrade">
+        <div className="settings-group upgrade-banner">
           <Crown className="icon" />
           <div className="upgrade-text">
             <strong>Upgrade to Premium</strong>
             <small>Calendar view and more functions</small>
           </div>
-          <button className="btn-upgrade" onClick={upgradeToPremium}>Upgrade</button>
+          <button className="btn btn-primary" onClick={upgradeToPremium}>Upgrade</button>
         </div>
       )}
 
+      {/* --- Main Settings --- */}
       <div className="settings-group">
-        <h3 className="settings-group-title">Email to Task</h3>
-        <p>Forward any email to:</p>
-        <code>{inboundEmailAddress}</code>
-        <small>and it will appear as a new to-do.</small>
-      </div>
-
-      {isPremium && (
-        <div className="settings-group">
-          <h3 className="settings-group-title">Calendar Sync</h3>
-          {calendarConnected ? (
-            <>
-              <span>Connected as {calendarEmail}</span>
-              <button onClick={handleDisconnectCalendar}>Disconnect</button>
-            </>
-          ) : (
-            <button onClick={handleConnectCalendar}>Connect Google/Outlook</button>
-          )}
-        </div>
-      )}
-
-      <div className="settings-group">
-        <h3 className="settings-group-title">Filters</h3>
-        <div className="settings-item">
-          <label htmlFor="list-select">List:</label>
-          <select id="list-select" value={filters.list_name} onChange={handleListChange}>
-            {listOptions.map((n) => <option key={n} value={n}>{n}</option>)}
-          </select>
-        </div>
-        <div className="settings-item">
-          <label htmlFor="status-select">Status:</label>
-          <select id="status-select" value={filters.status} onChange={handleStatusChange}>
-            <option value="All">All</option>
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-        <div className="settings-item checkbox-group">
-          <input id="urgent-toggle" type="checkbox" checked={filters.is_urgent} onChange={() => handleToggle("is_urgent")} />
-          <label htmlFor="urgent-toggle">Urgent only</label>
-        </div>
-        <div className="settings-item checkbox-group">
-          <input id="important-toggle" type="checkbox" checked={filters.is_important} onChange={() => handleToggle("is_important")} />
-          <label htmlFor="important-toggle">Important only</label>
-        </div>
-      </div>
-
-      <div className="settings-group">
-        <button className="settings-item" onClick={handleTabBar}><Grid className="icon" /> Tab Bar</button>
-      </div>
-
-      <div className="settings-group">
+        <h3 className="settings-group-title">General Settings</h3>
         <div className="settings-item">
           <Brush className="icon" /> Dark Mode
           <label className="switch">
@@ -214,26 +164,43 @@ export default function SettingsPage({
           </label>
         </div>
         <div className="settings-item">
-          <Brush className="icon" /> Theme
-          <ThemePicker />
+          <Volume2 className="icon" /> Voice Reminders
+          <label className="switch">
+            <input type="checkbox" checked={voiceSettings.remindersEnabled} onChange={() => handleVoiceToggle('remindersEnabled')} />
+            <span className="slider" />
+          </label>
         </div>
-        <button className="settings-item" onClick={handleSounds}><Music className="icon" /> Sounds & Notifications</button>
-        <button className="settings-item" onClick={handleDateTime}><Clock className="icon" /> Date & Time</button>
-        <button className="settings-item" onClick={handleWidgets}><LayoutGrid className="icon" /> Widgets</button>
-        <button className="settings-item" onClick={handleGeneral}><Cog className="icon" /> General</button>
+        <div className="settings-item">
+          <Globe2 className="icon" /> Voice Language
+          <select name="language" value={voiceSettings.language} onChange={handleVoiceSettingChange}>
+            {uniqueLanguages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+          </select>
+        </div>
+        <div className="settings-item">
+          <Mic className="icon" /> Voice Gender
+          <select name="gender" value={voiceSettings.gender} onChange={handleVoiceSettingChange}>
+            <option value="Female">Female</option>
+            <option value="Male">Male</option>
+          </select>
+        </div>
+        <button className="settings-item" onClick={() => go("/settings/general")}> <Cog className="icon" /> General <ArrowRight size={16} className="arrow-right" /> </button>
+        <button className="settings-item" onClick={() => go("/settings/notifications")}> <Music className="icon" /> Sounds & Notifications <ArrowRight size={16} className="arrow-right" /> </button>
       </div>
 
       <div className="settings-group">
-        <button className="settings-item" onClick={handleImport}><Share2 className="icon" /> Import & Integration</button>
+        <h3 className="settings-group-title">App & Data</h3>
+        <button className="settings-item" onClick={() => go("/settings/tab-bar")}> <Grid className="icon" /> Tab Bar <ArrowRight size={16} className="arrow-right" /> </button>
+        <button className="settings-item" onClick={() => go("/settings/integration")}> <Share2 className="icon" /> Import & Integration <ArrowRight size={16} className="arrow-right" /> </button>
       </div>
 
       <div className="settings-group">
-        <button className="settings-item" onClick={handleHelp}><MessageSquare className="icon" /> Help & Feedback</button>
-        <button className="settings-item" onClick={handleFollow}><User className="icon" /> Follow Us</button>
-        <button className="settings-item" onClick={handleAbout}><Info className="icon" /> About <span className="version">v7.5.41</span></button>
+        <h3 className="settings-group-title">About</h3>
+        <button className="settings-item" onClick={() => go("/help")}> <MessageSquare className="icon" /> Help & Feedback <ArrowRight size={16} className="arrow-right" /> </button>
+        <button className="settings-item" onClick={() => window.open("https://twitter.com", "_blank")}> <User className="icon" /> Follow Us </button>
+        <button className="settings-item" onClick={() => go("/about")}> <Info className="icon" /> About <span className="version">v1.0.0</span> </button>
       </div>
 
-      <button className="btn-signout" onClick={signOut}>Sign Out</button>
+      <button className="btn btn-danger sign-out-button" onClick={signOut}> <LogOut className="icon" /> Sign Out </button>
     </div>
   );
 }

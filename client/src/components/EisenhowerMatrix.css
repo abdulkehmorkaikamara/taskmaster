@@ -1,63 +1,66 @@
-/* src/index.css - Global styles only */
+/* src/components/EisenhowerMatrix.css */
 
-/* Base Reset & Layout */
-body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
-  font-family: 'Inter', sans-serif;
+.back-button {
+  margin-bottom: 1.5rem;
+}
+
+.eisenhower-matrix {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile-first: single column */
+  gap: 1.5rem;
+}
+
+.quadrant {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  min-height: 250px;
   display: flex;
-  justify-content: center;
-  color: #2d2d2d;
+  flex-direction: column;
+  transition: background-color 0.2s ease-in-out;
 }
 
-/* Main App Container */
-.app {
-  width: 90%;
-  max-width: 900px;
-  margin: 40px 0;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  padding: 24px;
+/* Style for visual feedback when dragging over a quadrant */
+.quadrant.is-over {
+  background-color: var(--primary-light);
+  border-color: var(--primary);
 }
 
-/* Header */
-.list-header {
+.quadrant h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.quadrant-task-list {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-.list-header h1 {
-  font-size: 2rem;
-  letter-spacing: 0.5px;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1; /* Allows the drop zone to fill the container */
 }
 
-/* Button Base */
-.btn {
-  font-size: 0.875rem;
-  padding: 8px 16px;
+.matrix-task {
+  background: var(--background);
+  padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: 8px;
+  border: 1px solid var(--border-color);
+  cursor: grab;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
-/* Controls Container */
-.controls {
-  display: flex;
-  align-items: center;
-  margin-bottom: 24px;
+.matrix-task:grabbing {
+  cursor: grabbing;
 }
 
-/* Dark-mode Overrides */
-body.dark {
-  background: #222;
-  color: #eee;
-}
-body.dark .app {
-  background: #333;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+/* On tablet screens and wider, switch to a 2x2 grid */
+@media (min-width: 768px) {
+  .eisenhower-matrix {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

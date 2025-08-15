@@ -9,10 +9,10 @@ export default function TaskList({
   onReorder,
   onEdit,
   onStart,
-  onUpdateTask // 1. Receive the prop here
+  onUpdateTask,
+  onDeleteTask
 }) {
 
-  // ... (handleDragEnd function remains the same)
   function handleDragEnd({ source, destination }) {
     if (!destination) return;
     const reordered = Array.from(tasks);
@@ -29,43 +29,54 @@ export default function TaskList({
   }
 
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <Droppable droppableId="task-list">
-        {(provided) => (
-          <ul
-            className="task-list"
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-          >
-            {tasks
-              .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-              .map((task, index) => (
-                <Draggable
-                  key={task.id}
-                  draggableId={task.id}
-                  index={index}
-                >
-                  {(prov) => (
-                    <li
-                      ref={prov.innerRef}
-                      {...prov.draggableProps}
-                      {...prov.dragHandleProps}
-                    >
-                      <ListItem
-                        task={task}
-                        userEmail={userEmail}
-                        onEdit={() => onEdit(task)}
-                        onStart={() => onStart(task)}
-                        onUpdateTask={onUpdateTask} // 2. Pass the prop down to ListItem
-                      />
-                    </li>
-                  )}
-                </Draggable>
-              ))}
-            {provided.placeholder}
-          </ul>
+    <div className="task-list-container">
+      <div className="filter-chips animated-fade-in">
+        {tasks.length > 0 && (
+          <>
+            <span className="chip slide-in">List: {tasks[0].list_name}</span>
+            <span className="chip slide-in delay">Total: {tasks.length}</span>
+          </>
         )}
-      </Droppable>
-    </DragDropContext>
+      </div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="task-list">
+          {(provided) => (
+            <ul
+              className="task-list"
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
+              {tasks
+                .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+                .map((task, index) => (
+                  <Draggable
+                    key={task.id}
+                    draggableId={task.id}
+                    index={index}
+                  >
+                    {(prov) => (
+                      <li
+                        ref={prov.innerRef}
+                        {...prov.draggableProps}
+                        {...prov.dragHandleProps}
+                      >
+                        <ListItem
+                          task={task}
+                          userEmail={userEmail}
+                          onEdit={() => onEdit(task)}
+                          onStart={() => onStart(task)}
+                          onUpdateTask={onUpdateTask}
+                          onDelete={() => onDeleteTask(task.id)}
+                        />
+                      </li>
+                    )}
+                  </Draggable>
+                ))}
+              {provided.placeholder}
+            </ul>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </div>
   );
 }
