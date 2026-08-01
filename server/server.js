@@ -8,24 +8,14 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt         = require('bcrypt');
 const jwt            = require('jsonwebtoken');
 const cron           = require('node-cron');
-const { google }     = require('googleapis');
-const ical           = require('ical-generator');
-const { Parser }     = require('json2csv');
-const fetch          = require('node-fetch');
-const crypto         = require('crypto');
 const stripe         = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const OpenAI         = require('openai');
 
 // ── PROJECT IMPORTS ───────────────────────────────────────────────
 const pool             = require('./db');
 const emailController  = require('./controllers/emailController');
 const requireAuth      = require('./middleware/requireAuth');
-const requireListRole  = require('./middleware/requireListRole');
-const { inviteMember } = require('./controllers/listsController');
+const listsRouter      = require('./routes/lists');
 const { updateUserProfile } = require("./controllers/userController");
-
-// ── OPENAI INITIALISATION ─────────────────────────────────────────
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // ── APP INITIALISATION ────────────────────────────────────────────
 const app = express();
@@ -34,9 +24,17 @@ const app = express();
 const PORT          = process.env.PORT || 8000;
 const FRONTEND_URL  = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-const whitelist = (process.env.CLIENT_ORIGIN || '').split(',');
+const whitelist = (process.env.CLIENT_ORIGIN || FRONTEND_URL)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin(origin, callback) {
+    if (!origin || whitelist.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  },
   credentials: true,
 };
 
@@ -70,6 +68,7 @@ app.post('/billing/webhook', express.raw({ type: 'application/json' }), async (r
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/lists', listsRouter);
 
 
 // ── PROTECTED ROUTES ─────────────────────────────────────────────
@@ -120,7 +119,7 @@ app.post('/billing/checkout', requireAuth, async (req, res) => {
 
 app.get("/users/me", requireAuth, async (req, res) => {
   try {
-    const userEmail = req.cookies.Email;
+    const userEmail = req.user.email;
     const user = await pool.query(`SELECT is_premium, name, avatar FROM users WHERE email = $1`, [userEmail]);
     if (user.rows.length === 0) return res.status(404).json({ error: "User not found" });
     const { is_premium, name, avatar } = user.rows[0];
